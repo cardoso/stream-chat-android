@@ -2,10 +2,14 @@ package com.getstream.getsteamchatlibrary;
 
 public class User {
 
-    int UserId;
+    static public String userId;
+    static public String name;
+    public static String imguser;
 
-    User(int id) {
-        this.UserId = id;
+    public User() {
+        userId = "";
+        name = "";
+        imguser = "";
     }
 
 }

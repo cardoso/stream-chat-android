@@ -1,13 +1,22 @@
 package com.getstream.getsteamchatlibrary;
 
+import android.content.Intent;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+
+import okhttp3.FormBody;
+import okhttp3.RequestBody;
 
 public class Channel {
 
-    String type, id, data;
+    static public String type, data, id;
     Boolean isTyping, initialized;
     String _data;
-    StreamChat client;
+    static public StreamChat client;
     ChannelState state;
     String lastTypingEvent;
 
@@ -36,14 +45,34 @@ public class Channel {
     }
 
 
-    String _channelURL() {
-        if(this.id == null){
+    static String _channelURL() {
+        id = "Jon Snow";
+        if(id == null){
             return "";
         }
-        String channelURL = this.client.baseURL + "/channels/" + this.type + this.id;
+//        String channelURL = client.baseURL + "/channels/" + type + id;
+        String channelURL = "https://chat-us-east-1.stream-io-api.com" + "/channels/" + id;
         return channelURL;
     }
 
+
+    static public void sendMessage(String message){
+        FormBody.Builder formBuilder = new FormBody.Builder()
+                .add("text", message);
+        RequestBody formBody = formBuilder.build();
+
+        APIManager.getInstance().post(_channelURL(), formBody, new APIManager.MyCallBackInterface() {
+            @Override
+            public void onSuccess(String result) {
+
+            }
+
+            @Override
+            public void onFailure(final String error, int nCode) {
+
+            }
+        });
+    }
 
     void _initializeState(ChannelState state) {
 
@@ -60,14 +89,14 @@ public class Channel {
         if(state.watchers.size() > 0) {
             for(int i = 0; i < state.watchers.size(); i++) {
                 User watcher = state.watchers.get(i);
-                this.state.watchers.set(watcher.UserId, watcher);
+                this.state.watchers.set(Integer.parseInt(watcher.userId), watcher);
             }
         }
 
         if(state.members.size() > 0) {
             for(int i = 0; i < state.members.size(); i++) {
                 User members = state.members.get(i);
-                this.state.members.set(members.UserId, members);
+                this.state.members.set(Integer.parseInt(members.userId), members);
             }
         }
     }

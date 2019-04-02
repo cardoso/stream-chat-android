@@ -14,7 +14,7 @@ public class StreamChat {
     ClientState state;
     String baseURL, wsBaseURL;
     User user;
-
+    boolean anonymous;
     public StreamChat(String key, String secretOrToptions, String options) {
 
         // Set the key
@@ -45,12 +45,12 @@ public class StreamChat {
 
     }
 
-    void setUser(User user, String userToken){
+    public void setUser(User user, String userToken){
 
         this.userToken = userToken;
 
         if(userToken == null && this.secret != null){
-            this.userToken = this.createToken(user.UserId);
+            this.userToken = this.createToken(user.userId);
         }
 
         if(this.userToken == null){
@@ -62,6 +62,49 @@ public class StreamChat {
         this._setUser(user);
 
 
+        return this._setupConnection();
+    }
+
+    void _setupConnection() {
+        this.UUID = uuidv4();
+        this.clientID = `${this.userID}--${this.UUID}`;
+        this.connect();
+        return this.wsPromise;
+    }
+
+    void connect() {
+        this.connecting = true;
+        StreamChat client = this;
+        this.failures = 0;
+
+        if(client.user.userId == null){
+            return;
+        }
+
+        const params = {
+                client_id: client.clientID,
+                user_id: client.userID,
+                user_details: client._user,
+                user_token: client.userToken,
+		};
+		const qs = encodeURIComponent(JSON.stringify(params));
+
+        String token = "";
+        if(this.anonymous == false){
+            token = this.userToken != null ? this.userToken : JWTUserToken("",user.userId,"","");
+        }
+
+        String authType = this.getAuthType();
+
+        client.wsURL = client.wsBaseURL + "/connect?json=" + qs + "&api_key="
+                + this.key + "&authorization=" + token + "&stream-auth-type=" + authType;
+
+        this.wsConnection = new StableWSConnection()
+
+    }
+
+    String getAuthType() {
+        return this.anonymous ? "anonymous" : "jwt";
     }
 
     void _setUser(User user){

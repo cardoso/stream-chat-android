@@ -1,55 +1,40 @@
 package com.getstream.getsteamchatlibrary;
 
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTCreationException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 
-import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 public class Signing {
 
     public static String JWTUserToken(String apiSecret, String userId, String extraData, String jwtOptions) {
 
+        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-        try {
-            Algorithm algorithm = Algorithm.HMAC256("secret");
-            String token = JWT.create()
-                    .withIssuer("auth0")
-                    .sign(algorithm);
-            return token;
-        } catch (JWTCreationException exception){
-            //Invalid Signing configuration / Couldn't convert Claims.
-            return "";
-        }
-
+        String jws = Jwts.builder().claim("user_id",userId).signWith(key).compact();
+        return jws;
     }
 
     public static String JWTServerToken(String apiSecret, String userId, String extraData, String jwtOptions) {
+        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-
-        try {
-            Algorithm algorithm = Algorithm.HMAC256("secret");
-            String token = JWT.create()
-                    .withIssuer("auth0")
-                    .sign(algorithm);
-            return token;
-        } catch (JWTCreationException exception){
-            //Invalid Signing configuration / Couldn't convert Claims.
-            return "";
-        }
-
+        String jws = Jwts.builder().claim("server",true).signWith(key).compact();
+        return jws;
     }
 
 
@@ -59,13 +44,13 @@ public class Signing {
 
     public static String decodeBase64(String s) {
 
-        byte[] valueDecoded = Base64.decodeBase64(s.getBytes());
+        byte[] valueDecoded = Base64.decode(s.getBytes(), Base64.DEFAULT);
         return new String(valueDecoded);
     }
 
     public static String encodeBase64(String s) {
 
-        byte[] valueDecoded = Base64.encodeBase64(s.getBytes());
+        byte[] valueDecoded = Base64.encode(s.getBytes(), Base64.DEFAULT);
         return new String(valueDecoded);
     }
 

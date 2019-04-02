@@ -30,8 +30,8 @@ public class ChannelState {
 
     }
 
-//    void addMessagesSorted(ArrayList<MessageModel> newMessages){
-//
+    void addMessagesSorted(ArrayList<MessageModel> newMessages){
+
 //        ArrayList<MessageModel> parsedMessages = new ArrayList<MessageModel>();
 //
 //        for(int i = 0; i < newMessages.size(); i++){
@@ -63,8 +63,8 @@ public class ChannelState {
 //                updatedThreads.add(parentID);
 //            }
 //        }
-//
-//    }
+
+    }
 
     MessageModel messageToImmutable(MessageModel message){
 
