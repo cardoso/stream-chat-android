@@ -54,7 +54,7 @@ public class Signing {
 
 
     public static String DevToken(String userID){
-        return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" + "." + encodeBase64("user_id" + ":" + userID);
+        return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" + "." + encodeBase64("user_id" + ":" + userID) + "." + "devtoken";
     }
 
     public static String decodeBase64(String s) {

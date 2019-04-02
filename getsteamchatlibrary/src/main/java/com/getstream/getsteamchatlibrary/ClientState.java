@@ -7,7 +7,7 @@ public class ClientState {
 
     ArrayList<User> users;
 
-    public ClientState(){
+    ClientState(){
 
         this.users = new ArrayList<User>();
     }

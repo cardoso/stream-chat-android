@@ -2,9 +2,9 @@ package com.getstream.getsteamchatlibrary;
 
 public class User {
 
-    String UserId;
+    int UserId;
 
-    User(String id) {
+    User(int id) {
         this.UserId = id;
     }
 

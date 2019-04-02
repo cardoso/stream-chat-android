@@ -8,14 +8,14 @@ import okhttp3.RequestBody;
 import static com.getstream.getsteamchatlibrary.Signing.JWTUserToken;
 import static com.getstream.getsteamchatlibrary.Signing.UserFromToken;
 
-public class SteamChat {
+public class StreamChat {
 
     String key, secret, broswer, node, userToken;
     ClientState state;
     String baseURL, wsBaseURL;
     User user;
 
-    public SteamChat(String key, String secretOrToptions, String options) {
+    public StreamChat(String key, String secretOrToptions, String options) {
 
         // Set the key
         this.key = key;
