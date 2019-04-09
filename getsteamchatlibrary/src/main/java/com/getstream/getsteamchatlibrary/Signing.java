@@ -11,9 +11,12 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.crypto.spec.SecretKeySpec;
 
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
@@ -24,9 +27,20 @@ public class Signing {
 
     public static String JWTUserToken(String apiSecret, String userId, String extraData, String jwtOptions) {
 
-        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        byte[] apiKeySecretBytes = Base64.decode("MTA1NDQ2NDYyMjkxODQ3NjI0NjM4NjUxNTYxZGZnMTU2MTQ4ZGY5NDE4MTk0OTg=",Base64.DEFAULT);
+        Key signingKey = new SecretKeySpec(apiKeySecretBytes, SignatureAlgorithm.HS256.getJcaName());
 
-        String jws = Jwts.builder().claim("user_id",userId).signWith(key).compact();
+//        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+
+//        Key JWT = Keys.secretKeyFor(SignatureAlgorithm.JWT);
+
+        Map map = new HashMap<String,Object>();
+        map.put("typ","JWT");
+
+        Date date= new Date();
+
+        long time = date.getTime()/1000;
+        String jws = Jwts.builder().claim("user_id",userId).claim("iat",time).signWith(signingKey).setHeader(map).compact();
         return jws;
     }
 

@@ -1,6 +1,14 @@
 package com.getstream.getsteamchatlibrary;
 
+import com.google.gson.Gson;
+
 import java.lang.reflect.Array;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
@@ -10,11 +18,16 @@ import static com.getstream.getsteamchatlibrary.Signing.UserFromToken;
 
 public class StreamChat {
 
-    String key, secret, broswer, node, userToken;
+    String key, secret, userToken;
     ClientState state;
-    String baseURL, wsBaseURL;
+    static String baseURL, wsBaseURL, wsURL;
+    boolean anonymous, connecting;
+    String UUID_,clientID,userID;
+    int failures = 0;
     User user;
-    boolean anonymous;
+    ArrayList<Channel> activeChannels;
+
+
     public StreamChat(String key, String secretOrToptions, String options) {
 
         // Set the key
@@ -22,6 +35,7 @@ public class StreamChat {
         this.secret = null;
         this.state = new ClientState();
 
+        activeChannels = new ArrayList<Channel>();
         // set the secret
 
 //        this.browser =
@@ -45,10 +59,37 @@ public class StreamChat {
 
     }
 
+    public Channel channel(String channelType, String channelID, String custom){
+
+        Channel channel = null;
+        if(channelID.length()>0){
+            String cid = channelID + ":" + channelID;
+            for(int i=0;i<this.activeChannels.size();i++){
+                if(this.activeChannels.get(i).cid.equals(cid)){
+                    channel = this.activeChannels.get(i);
+//                    channel._data = custom;
+//                    channel.data = custom;
+                }
+            }
+
+            channel = new Channel(this,channelType,channelID,custom);
+            this.activeChannels.add(channel);
+
+
+        }else{
+
+            channel = new Channel(this,channelType,"",custom);
+
+        }
+        return channel;
+
+    }
+
     public void setUser(User user, String userToken){
 
         this.userToken = userToken;
 
+        this.userID = user.userId;
         if(userToken == null && this.secret != null){
             this.userToken = this.createToken(user.userId);
         }
@@ -60,34 +101,41 @@ public class StreamChat {
         String tokenUserId = UserFromToken(this.userToken);
 
         this._setUser(user);
+        this.anonymous = false;
 
 
-        return this._setupConnection();
+        this._setupConnection();
     }
 
     void _setupConnection() {
-        this.UUID = uuidv4();
-        this.clientID = `${this.userID}--${this.UUID}`;
+
+        this.UUID_ = String.valueOf(UUID.randomUUID());
+        this.clientID = this.user.userId + "--" + this.UUID_;
         this.connect();
-        return this.wsPromise;
     }
 
     void connect() {
         this.connecting = true;
-        StreamChat client = this;
         this.failures = 0;
 
-        if(client.user.userId == null){
-            return;
-        }
+//        if(client.userID == null){
+//            return;
+//        }
 
-        const params = {
-                client_id: client.clientID,
-                user_id: client.userID,
-                user_details: client._user,
-                user_token: client.userToken,
-		};
-		const qs = encodeURIComponent(JSON.stringify(params));
+
+
+        Map<String,String> params =  new HashMap<String,String>();
+//add items
+        String client_id = "\"client_id\":\""+ this.clientID + "\"";
+        String user_id = "\"user_id\":\""+ this.userID + "\"";
+        String userString = "\"" +"id\":\"" + this.userID + "\"" + ",\"name\":" + "\"" + this.user.name + "\"" + ",\"image\":" + "\"" + this.user.imguser + "\"";
+        String user_details = "\"user_details\":{" + userString + "}";
+        String user_token = "\"user_token\":\"" + this.userToken + "\"";
+
+//		const qs = encodeURIComponent(JSON.stringify(params));
+		String qs = URLEncoder.encode("{" + client_id +"," + user_id +"," + user_details +"," + user_token +"}");
+		if(qs.length() > 1900)
+            return;
 
         String token = "";
         if(this.anonymous == false){
@@ -96,10 +144,14 @@ public class StreamChat {
 
         String authType = this.getAuthType();
 
-        client.wsURL = client.wsBaseURL + "/connect?json=" + qs + "&api_key="
+        this.wsURL = this.wsBaseURL + "/connect?json=" + qs + "&api_keyf="
                 + this.key + "&authorization=" + token + "&stream-auth-type=" + authType;
 
-        this.wsConnection = new StableWSConnection()
+        StableWSConnection wsConnection = new StableWSConnection(wsURL, clientID, user.userId/*, this.recoverState, this.handleEvent, this.dispatchEvent*/);
+//        wsConnection.connect();
+        wsConnection.connect();
+
+//        return this.wsPromise;
 
     }
 
@@ -120,6 +172,39 @@ public class StreamChat {
     void setBsaeURL(String baseURL) {
         this.baseURL = baseURL;
         this.wsBaseURL = this.baseURL.replace("http","ws");
+    }
+
+    public void createChannelType(String data){
+        FormBody.Builder formBuilder = new FormBody.Builder()
+                .add("name", this.UUID_);
+        RequestBody formBody = formBuilder.build();
+
+        APIManager.getInstance().post(baseURL + "/channeltypes", formBody, new APIManager.MyCallBackInterface() {
+            @Override
+            public void onSuccess(String result) {
+
+            }
+
+            @Override
+            public void onFailure(final String error, int nCode) {
+
+            }
+        });
+    }
+
+    void getChannelType(String channelType){
+
+        APIManager.getInstance().get(this.baseURL+"/channeltypes/" + channelType, new APIManager.MyCallBackInterface() {
+            @Override
+            public void onSuccess(String result) {
+
+            }
+
+            @Override
+            public void onFailure(final String error, int nCode) {
+
+            }
+        });
     }
 
 }

@@ -69,4 +69,32 @@ public class APIManager {
         });
 
     }
+
+    public void get(final String URL,final MyCallBackInterface callback){
+
+        String strURL = String.format("%s",URL);
+        Request request = new Request.Builder()
+                .url(strURL)
+                .get()
+
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                callback.onFailure("Failed", 500);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String jsonData = response.body().string();
+                int code = response.code();
+                if(code == 200){
+                    callback.onSuccess(jsonData);
+                }else{
+                    callback.onFailure(jsonData, code);
+                }
+            }
+        });
+
+    }
 }

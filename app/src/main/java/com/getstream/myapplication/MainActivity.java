@@ -8,6 +8,8 @@ import com.getstream.getsteamchatlibrary.Signing;
 import com.getstream.getsteamchatlibrary.StreamChat;
 import com.getstream.getsteamchatlibrary.User;
 
+import okhttp3.FormBody;
+import okhttp3.RequestBody;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -22,14 +24,25 @@ public class MainActivity extends AppCompatActivity {
 
         User user = new User();
         user.userId = "jon-snow";
-        user.name = "Jone Snow";
-        user.imguser = "https://bit.ly/2F3KEoM";
+        user.name = "Jon Snow";
+        user.imguser = "https://bit.ly/2u9Vc0r";
+
 
         client.setUser(user, Signing.JWTUserToken("1",user.userId,"1","1"));
 
-        Channel channel = new Channel(client,"type",user.userId,"");
+//        FormBody.Builder formBuilder = new FormBody.Builder()
+//                .add("name", "Private Chat About the Kingdom")
+//                .add("image", "https://bit.ly/2F3KEoM")
+//                .add("members", "jon-snow")
+//                .add("session", "8");
+//        RequestBody formBody = formBuilder.build();
 
-        channel.sendMessage("asdf");
+        Channel channel = client.channel("messaging","the-small-councli","");
+
+
+//        Channel channel = new Channel(client,"private",user.userId,"");
+
+//        channel.sendMessage("asdf");
 
 
 //        Toast.makeText(this, JWTUserToken("1",1,"1","1"), Toast.LENGTH_SHORT).show();

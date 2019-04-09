@@ -13,12 +13,13 @@ import okhttp3.RequestBody;
 
 public class Channel {
 
-    static public String type, data, id;
+    static public String type , id;
     Boolean isTyping, initialized;
-    String _data;
+    static public String cid;
     static public StreamChat client;
     ChannelState state;
     String lastTypingEvent;
+    String _data,data;
 
 
     public Channel(StreamChat client, String type, String id, String data) {
@@ -34,7 +35,7 @@ public class Channel {
         // this._data is used for the requests...
 //        this._data = { ...data };
 
-//        this.cid = `${type}:${id}`;
+        this.cid = type + ":" + id;
         // perhaps the state variable should be private
         this.state = new ChannelState(this);
         this.initialized = false;
@@ -42,16 +43,15 @@ public class Channel {
         this.isTyping = false;
 
 
+        this.create();
     }
 
 
     static String _channelURL() {
-        id = "Jon Snow";
         if(id == null){
             return "";
         }
-//        String channelURL = client.baseURL + "/channels/" + type + id;
-        String channelURL = "https://chat-us-east-1.stream-io-api.com" + "/channels/" + id;
+        String channelURL = client.baseURL + "/channels/" + type + id;
         return channelURL;
     }
 
@@ -61,7 +61,7 @@ public class Channel {
                 .add("text", message);
         RequestBody formBody = formBuilder.build();
 
-        APIManager.getInstance().post(_channelURL(), formBody, new APIManager.MyCallBackInterface() {
+        APIManager.getInstance().post(_channelURL() + "/message", formBody, new APIManager.MyCallBackInterface() {
             @Override
             public void onSuccess(String result) {
 
@@ -99,6 +99,39 @@ public class Channel {
                 this.state.members.set(Integer.parseInt(members.userId), members);
             }
         }
+    }
+
+    void create() {
+        this.query();
+    }
+    void query(){
+
+
+        String queryURL = this.client.baseURL + "/channels/" + this.type;
+        if(this.id.length()>0){
+            queryURL += "/"+ this.id;
+        }
+
+        FormBody.Builder formBuilder = new FormBody.Builder()
+                .add("data", String.valueOf(this.data))
+                .add("state", String.valueOf(true))
+                .add("watch", String.valueOf(false))
+                .add("state", String.valueOf(false))
+                .add("presence", String.valueOf(false));
+        RequestBody formBody = formBuilder.build();
+
+
+        APIManager.getInstance().post(queryURL + "/query", formBody, new APIManager.MyCallBackInterface() {
+            @Override
+            public void onSuccess(String result) {
+
+            }
+
+            @Override
+            public void onFailure(final String error, int nCode) {
+
+            }
+        });
     }
 
 }
