@@ -2,23 +2,14 @@ package com.getstream.getsteamchatlibrary;
 
 import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
 
-
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.security.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.crypto.spec.SecretKeySpec;
-
-import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -27,12 +18,6 @@ public class Signing {
 
     public static String JWTUserToken(String apiSecret, String userId, String extraData, String jwtOptions) {
 
-        byte[] apiKeySecretBytes = Base64.decode("MTA1NDQ2NDYyMjkxODQ3NjI0NjM4NjUxNTYxZGZnMTU2MTQ4ZGY5NDE4MTk0OTg=",Base64.DEFAULT);
-        Key signingKey = new SecretKeySpec(apiKeySecretBytes, SignatureAlgorithm.HS256.getJcaName());
-
-//        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-
-//        Key JWT = Keys.secretKeyFor(SignatureAlgorithm.JWT);
 
         Map map = new HashMap<String,Object>();
         map.put("typ","JWT");
@@ -40,7 +25,7 @@ public class Signing {
         Date date= new Date();
 
         long time = date.getTime()/1000;
-        String jws = Jwts.builder().claim("user_id",userId).claim("iat",time).signWith(signingKey).setHeader(map).compact();
+        String jws = Jwts.builder().claim("user_id",userId).claim("iat",time).signWith(SignatureAlgorithm.HS256,apiSecret.getBytes()).setHeader(map).compact();
         return jws;
     }
 
@@ -77,16 +62,6 @@ public class Signing {
 
         String b64Payload = fragments[1];
         String payload = decodeBase64(b64Payload);
-
-//        String json = "";
-//
-////        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-//
-//        try {
-//            json = ow.writeValueAsString(payload);
-//        } catch (JsonProcessingException e) {
-//            e.printStackTrace();
-//        }
 
         try {
 

@@ -9,8 +9,6 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 import okio.ByteString;
 
-import static android.os.SystemClock.sleep;
-
 public class StableWSConnection extends WebSocketListener {
 
 
@@ -44,7 +42,7 @@ public class StableWSConnection extends WebSocketListener {
             isConnecting = false;
             consecutiveFailures = 0;
             _startMonitor();
-            startHealthCheck();
+            _startHealthCheck();
 
         }
         @Override
@@ -55,7 +53,7 @@ public class StableWSConnection extends WebSocketListener {
             isConnecting = false;
             consecutiveFailures = 0;
             _startMonitor();
-            startHealthCheck();
+            _startHealthCheck();
 //            this.messageCallback()
         }
         @Override
@@ -66,7 +64,7 @@ public class StableWSConnection extends WebSocketListener {
             isConnecting = false;
             consecutiveFailures = 0;
             _startMonitor();
-            startHealthCheck();
+            _startHealthCheck();
         }
         @Override
         public void onClosing(WebSocket webSocket, int code, String reason) {
@@ -209,8 +207,8 @@ public class StableWSConnection extends WebSocketListener {
         return interval;
 
     }
-    void startHealthCheck(){
-        ws.send("type");
+    void _startHealthCheck(){
+//        ws.send("type");
     }
 
 //    void _setupConnectionPromise(){

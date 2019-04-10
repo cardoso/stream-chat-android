@@ -68,8 +68,8 @@ public class ChannelState {
 
     MessageModel messageToImmutable(MessageModel message){
 
-        message.create_at = new Date();
-        message.updated_at = new Date();
+        message.create_at = new Date().toString();
+        message.updated_at = new Date().toString();
         if(message.status == null){
             message.status = "received";
         }

@@ -1,15 +1,14 @@
 package com.getstream.myapplication;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 
 import com.getstream.getsteamchatlibrary.Channel;
 import com.getstream.getsteamchatlibrary.Signing;
 import com.getstream.getsteamchatlibrary.StreamChat;
 import com.getstream.getsteamchatlibrary.User;
-
-import okhttp3.FormBody;
-import okhttp3.RequestBody;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -20,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        StreamChat client = new StreamChat("qk4nn7rpcn75","","");
+        StreamChat client = new StreamChat("xjtb8skbgnrr","","");
 
         User user = new User();
         user.userId = "jon-snow";
@@ -28,16 +27,21 @@ public class MainActivity extends AppCompatActivity {
         user.imguser = "https://bit.ly/2u9Vc0r";
 
 
-        client.setUser(user, Signing.JWTUserToken("1",user.userId,"1","1"));
+        client.setUser(user, Signing.JWTUserToken("v4dg6xc6kr6ygsvb2ej5j953ybjqddc9pjgvdqh6suag6hyhr2ezfctq6ez62qhq",user.userId,"1","1"));
 
-//        FormBody.Builder formBuilder = new FormBody.Builder()
-//                .add("name", "Private Chat About the Kingdom")
-//                .add("image", "https://bit.ly/2F3KEoM")
-//                .add("members", "jon-snow")
-//                .add("session", "8");
-//        RequestBody formBody = formBuilder.build();
+        final Channel channel = client.channel("messaging","the-small-councli","Private Chat About the Kingdom","https://bit.ly/2F3KEoM", new String[]{"jon-snow"},8);
+        channel.watch();
 
-        Channel channel = client.channel("messaging","the-small-councli","");
+
+        Button btn_send = (Button)findViewById(R.id.btn_send);
+        btn_send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                channel.sendMessage("test");
+            }
+        });
+
+
 
 
 //        Channel channel = new Channel(client,"private",user.userId,"");

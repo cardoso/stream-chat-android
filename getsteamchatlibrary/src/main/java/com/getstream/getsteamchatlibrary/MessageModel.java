@@ -1,11 +1,9 @@
 package com.getstream.getsteamchatlibrary;
 
-import java.util.Date;
-
 public class MessageModel {
 
-    Date create_at;
-    Date updated_at;
+    String create_at;
+    String updated_at;
     String status;
     String msg;
     int parent_id;
@@ -13,7 +11,7 @@ public class MessageModel {
     String type;
     int id;
 
-    MessageModel(String msg, int id, String type, int parent_id, boolean show_in_channel, Date create_at, Date updated_at) {
+    MessageModel(String msg, int id, String type, int parent_id, boolean show_in_channel, String create_at, String updated_at) {
 
         this.msg = msg;
         this.id = id;

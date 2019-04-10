@@ -1,17 +1,18 @@
 package com.getstream.getsteamchatlibrary;
 
-import com.google.gson.Gson;
-
-import java.lang.reflect.Array;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import static com.getstream.getsteamchatlibrary.Signing.JWTUserToken;
 import static com.getstream.getsteamchatlibrary.Signing.UserFromToken;
@@ -20,9 +21,9 @@ public class StreamChat {
 
     String key, secret, userToken;
     ClientState state;
-    static String baseURL, wsBaseURL, wsURL;
+    static public String baseURL, wsBaseURL, wsURL,clientID;
     boolean anonymous, connecting;
-    String UUID_,clientID,userID;
+    String UUID_,userID;
     int failures = 0;
     User user;
     ArrayList<Channel> activeChannels;
@@ -55,11 +56,13 @@ public class StreamChat {
 //        RequestBody formBody = defaultOptions.build();
 
 
+
+
         this.setBsaeURL("https://chat-us-east-1.stream-io-api.com");
 
     }
 
-    public Channel channel(String channelType, String channelID, String custom){
+    public Channel channel(String channelType, String channelID, String name,String image,String[] members, int session){
 
         Channel channel = null;
         if(channelID.length()>0){
@@ -72,13 +75,13 @@ public class StreamChat {
                 }
             }
 
-            channel = new Channel(this,channelType,channelID,custom);
+            channel = new Channel(this,channelType,channelID,name,image,members,session);
             this.activeChannels.add(channel);
 
 
         }else{
 
-            channel = new Channel(this,channelType,"",custom);
+            channel = new Channel(this,channelType,"",name,image,members,session);
 
         }
         return channel;
@@ -123,17 +126,16 @@ public class StreamChat {
 //        }
 
 
-
-        Map<String,String> params =  new HashMap<String,String>();
 //add items
+
         String client_id = "\"client_id\":\""+ this.clientID + "\"";
         String user_id = "\"user_id\":\""+ this.userID + "\"";
         String userString = "\"" +"id\":\"" + this.userID + "\"" + ",\"name\":" + "\"" + this.user.name + "\"" + ",\"image\":" + "\"" + this.user.imguser + "\"";
         String user_details = "\"user_details\":{" + userString + "}";
         String user_token = "\"user_token\":\"" + this.userToken + "\"";
 
-//		const qs = encodeURIComponent(JSON.stringify(params));
-		String qs = URLEncoder.encode("{" + client_id +"," + user_id +"," + user_details +"," + user_token +"}");
+        String strqs = "{" + client_id +"," + user_id +"," + user_details +"," + user_token +"}";
+        String qs = URLEncoder.encode(strqs);
 		if(qs.length() > 1900)
             return;
 
@@ -144,14 +146,12 @@ public class StreamChat {
 
         String authType = this.getAuthType();
 
-        this.wsURL = this.wsBaseURL + "/connect?json=" + qs + "&api_keyf="
+        this.wsURL = this.wsBaseURL + "/connect?json=" + qs + "&api_key="
                 + this.key + "&authorization=" + token + "&stream-auth-type=" + authType;
 
         StableWSConnection wsConnection = new StableWSConnection(wsURL, clientID, user.userId/*, this.recoverState, this.handleEvent, this.dispatchEvent*/);
-//        wsConnection.connect();
-        wsConnection.connect();
 
-//        return this.wsPromise;
+        wsConnection.connect();
 
     }
 
@@ -165,7 +165,7 @@ public class StreamChat {
 
     String createToken(String userID){
 
-        return JWTUserToken("1",userID,"1","1");
+        return JWTUserToken("v4dg6xc6kr6ygsvb2ej5j953ybjqddc9pjgvdqh6suag6hyhr2ezfctq6ez62qhq",userID,"1","1");
 
     }
 
@@ -205,6 +205,39 @@ public class StreamChat {
 
             }
         });
+    }
+
+    void post(String url, String params){
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(JSON, params);
+
+
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .addHeader("Authorization", this.userToken)
+                .addHeader("Content-Type","application/json")//Notice this request has header if you don't need to send a header just erase this part
+                .addHeader("Stream-Auth-Type","jwt")
+                .build();
+
+        Call call = client.newCall(request);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+            }
+
+        });
+
     }
 
 }
