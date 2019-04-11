@@ -1,5 +1,8 @@
 package com.getstream.getsteamchatlibrary;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Date;
 
 import okhttp3.OkHttpClient;
@@ -28,6 +31,8 @@ public class StableWSConnection extends WebSocketListener {
     EchoWebSocketListener listener;
     WebSocket ws;
 
+    public MessageModel mMessage = new MessageModel();
+
     private final class EchoWebSocketListener extends WebSocketListener {
         private static final int NORMAL_CLOSURE_STATUS = 1000;
         @Override
@@ -55,6 +60,22 @@ public class StableWSConnection extends WebSocketListener {
             _startMonitor();
             _startHealthCheck();
 //            this.messageCallback()
+
+            //
+            try {
+                JSONObject jsonObject = new JSONObject(text);
+                String type = jsonObject.getString("type");
+                if(type.equals("notification.message_new")){
+                    String cid = jsonObject.getString("cid");
+                    JSONObject messageObject = jsonObject.getJSONObject("message");
+                    mMessage = new JSONParser().parseMessageData(messageObject);
+
+
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
         }
         @Override
         public void onMessage(WebSocket webSocket, ByteString bytes) {

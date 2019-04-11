@@ -1,5 +1,9 @@
 package com.getstream.getsteamchatlibrary;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -19,15 +23,17 @@ import static com.getstream.getsteamchatlibrary.Signing.UserFromToken;
 
 public class StreamChat {
 
-    String key, secret, userToken;
+    static String key;
+    String secret;
+    static String userToken;
     ClientState state;
     static public String baseURL, wsBaseURL, wsURL,clientID;
     boolean anonymous, connecting;
     String UUID_,userID;
     int failures = 0;
-    User user;
-    ArrayList<Channel> activeChannels;
-
+    static User user;
+    static ArrayList<Channel> activeChannels;
+    public StableWSConnection wsConnection;
 
     public StreamChat(String key, String secretOrToptions, String options) {
 
@@ -70,15 +76,12 @@ public class StreamChat {
             for(int i=0;i<this.activeChannels.size();i++){
                 if(this.activeChannels.get(i).cid.equals(cid)){
                     channel = this.activeChannels.get(i);
-//                    channel._data = custom;
-//                    channel.data = custom;
+
+                    break;
                 }
             }
-
             channel = new Channel(this,channelType,channelID,name,image,members,session);
             this.activeChannels.add(channel);
-
-
         }else{
 
             channel = new Channel(this,channelType,"",name,image,members,session);
@@ -149,7 +152,7 @@ public class StreamChat {
         this.wsURL = this.wsBaseURL + "/connect?json=" + qs + "&api_key="
                 + this.key + "&authorization=" + token + "&stream-auth-type=" + authType;
 
-        StableWSConnection wsConnection = new StableWSConnection(wsURL, clientID, user.id/*, this.recoverState, this.handleEvent, this.dispatchEvent*/);
+        wsConnection = new StableWSConnection(wsURL, clientID, user.id/*, this.recoverState, this.handleEvent, this.dispatchEvent*/);
 
         wsConnection.connect();
 
@@ -239,5 +242,66 @@ public class StreamChat {
         });
 
     }
+    static public void queryChannels(){
 
+        JSONArray memArray = new JSONArray();
+        memArray.put(user.id);
+//        for(int i=0;i<members.size();i++){
+//            memArray.put(members.get(i).user.id);
+//        }
+
+        String queryChannels_url = baseURL + "/channels" + "?api_key=" +key + "&payload={\"filter_conditions\":{\"members\":{\"$in\":" + memArray.toString() + "}},\"sort\":[{\"field\":\"last_message_at\",\"direction\":-1}],\"state\":true,\"subscribe\":true,\"watch\":true}";
+        get(queryChannels_url);
+
+    }
+    static void get(String url){
+        final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
+
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("Authorization", userToken)
+                .addHeader("Content-Type","application/json")//Notice this request has header if you don't need to send a header just erase this part
+                .addHeader("Stream-Auth-Type","jwt")
+                .build();
+
+        Call call = client.newCall(request);
+
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+                if(response.code() == 200){
+                    String jsonData = response.body().string();
+
+                    try {
+                        JSONObject jsonObject = new JSONObject(jsonData);
+                        JSONArray channelArray = jsonObject.getJSONArray("channels");
+
+                        for(int i = 0;i < channelArray.length();i++){
+                            JSONObject jsonObj = channelArray.getJSONObject(i);
+                            Channel channel = new JSONParser().parseChannelData(jsonObj);
+                            activeChannels.add(channel);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+
+        });
+
+    }
 }

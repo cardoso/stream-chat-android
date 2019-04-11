@@ -36,9 +36,32 @@ public class Channel {
 
 
     public ArrayList<MessageModel> messageLists = new ArrayList<MessageModel>();
-    ArrayList<Member> members = new ArrayList<Member>();
+    static ArrayList<Member> members = new ArrayList<Member>();
 
 
+
+    public Channel(){
+        String validTypeRe = "/^[\\w_-]+$/";
+        String validIDRe = "/^[\\w_-]+$/";
+
+        this.client = null;
+        this.type = "";
+        this.id = "";
+
+
+        this.cid = type + ":" + id;
+        // perhaps the state variable should be private
+        this.state = new ChannelState(this);
+        this.initialized = false;
+        this.lastTypingEvent = "";
+        this.isTyping = false;
+
+
+        this.name = "";
+        this.image = "";
+        this.session = 0;
+        create_by = new User();
+    }
 
 
     public Channel(StreamChat client, String type, String id, String name,String image,ArrayList<Member> members, int session) {
@@ -49,7 +72,6 @@ public class Channel {
         this.client = client;
         this.type = type;
         this.id = id;
-        // used by the frontend, gets updated:
 
 
         this.cid = type + ":" + id;
@@ -64,7 +86,7 @@ public class Channel {
         this.image = image;
         this.members = members;
         this.session = session;
-
+        create_by = new User();
     }
 
 
@@ -224,7 +246,7 @@ public class Channel {
 
                         JSONObject createby = channelObject.getJSONObject("created_by");
 
-                        create_by = new User();
+
 
                         create_by.id = createby.getString("id");
                         create_by.role = createby.getString("role");
@@ -255,6 +277,10 @@ public class Channel {
                         config.message_retention = configObject.getString("message_retention");
                         config.max_message_length = configObject.getInt("max_message_length");
                         config.automod = configObject.getString("automod");
+
+                        session = channelObject.getInt("session");
+                        name = channelObject.getString("name");
+                        image = channelObject.getString("image");
 
 
 
@@ -316,12 +342,6 @@ public class Channel {
 
                             members.add(member);
                         }
-
-
-
-
-
-
 
                     } catch (JSONException e) {
                         e.printStackTrace();

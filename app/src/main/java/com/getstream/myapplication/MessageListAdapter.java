@@ -1,87 +1,83 @@
 package com.getstream.myapplication;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.getstream.getsteamchatlibrary.MessageModel;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
-public class MessageListAdapter extends RecyclerView.Adapter<MessageListAdapter.ViewHolder>{
-    private static final int VIEW_TYPE_MESSAGE_SENT = 100;
-    private static final int VIEW_TYPE_MESSAGE_RECEIVED = 101;
-    private Context mContext;
-    private ArrayList<MessageModel> mMessageList;
+public class MessageListAdapter extends BaseAdapter {
 
-    @NonNull
-    @Override
-    public MessageListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        // create a new view
-        LayoutInflater inflater = LayoutInflater.from(
-                viewGroup.getContext());
-        View v =
-                inflater.inflate(R.layout.item_message_received, viewGroup, false);
-        // set the view's size, margins, paddings and layout parameters
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
-    }
+    Context mContext;
+    ArrayList<MessageModel> mMessageList;
 
-    public MessageListAdapter(Context context,ArrayList<MessageModel> mMessageList) {
-        this.mContext = context;
+    static LayoutInflater inflater = null;
+
+    MessageListAdapter(Context context, ArrayList<MessageModel> mMessageList){
+
         this.mMessageList = mMessageList;
+        this.mContext = context;
+
+        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
-        MessageModel message = (MessageModel) mMessageList.get(i);
-
-//        switch (viewHolder.getItemViewType()) {
-//            case VIEW_TYPE_MESSAGE_SENT:
-//                ((SentMessageHolder) viewHolder).bind(message);
-//                break;
-//            case VIEW_TYPE_MESSAGE_RECEIVED:
-//                ((ReceivedMessageHolder) viewHolder).bind(message);
-//        }
-    }
-
-    @Override
-    public int getItemCount() {
+    public int getCount() {
         return mMessageList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        // each data item is just a string in this case
-        public TextView txtHeader;
-        public TextView txtFooter;
-        public View layout;
-
-        public ViewHolder(View v) {
-            super(v);
-            layout = v;
-        }
+    @Override
+    public Object getItem(int i) {
+        return null;
     }
 
-    private class SentMessageHolder extends RecyclerView.ViewHolder {
+    @Override
+    public long getItemId(int i) {
+        return 0;
+    }
+
+    @Override
+    public View getView(int i, View view, ViewGroup viewGroup) {
+
+        View vi = view;
+        if(vi == null){
+            vi = inflater.inflate(R.layout.item_message_sent,null);
+        }
+
         TextView messageText, timeText;
+        messageText = (TextView) vi.findViewById(R.id.text_message_body);
+        timeText = (TextView) vi.findViewById(R.id.text_message_time);
 
-        SentMessageHolder(View itemView) {
-            super(itemView);
+        messageText.setText(mMessageList.get(i).text);
 
-            messageText = (TextView) itemView.findViewById(R.id.text_message_body);
-            timeText = (TextView) itemView.findViewById(R.id.text_message_time);
+
+
+        SimpleDateFormat localDateFormat = new SimpleDateFormat("HH:mm");
+        String oldstring = mMessageList.get(i).updated_at;
+
+        Date date= null;
+        try {
+            date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSX").parse(oldstring);
+            String dateFormat = "mm:ss";
+            SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+            String tDate = sdf.format(date);
+            timeText.setText(tDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
 
-        void bind(MessageModel message) {
-            messageText.setText(message.text);
 
-            // Format the stored timestamp into a readable String using method.
-//            timeText.setText(Utils.formatDateTime(message.getCreatedAt()));
-        }
+
+
+
+        return vi;
     }
-
 }
