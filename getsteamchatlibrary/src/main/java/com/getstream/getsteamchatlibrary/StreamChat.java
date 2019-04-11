@@ -62,7 +62,7 @@ public class StreamChat {
 
     }
 
-    public Channel channel(String channelType, String channelID, String name,String image,String[] members, int session){
+    public Channel channel(String channelType, String channelID, String name,String image,ArrayList<Member> members, int session){
 
         Channel channel = null;
         if(channelID.length()>0){
@@ -92,9 +92,9 @@ public class StreamChat {
 
         this.userToken = userToken;
 
-        this.userID = user.userId;
+        this.userID = user.id;
         if(userToken == null && this.secret != null){
-            this.userToken = this.createToken(user.userId);
+            this.userToken = this.createToken(user.id);
         }
 
         if(this.userToken == null){
@@ -113,7 +113,7 @@ public class StreamChat {
     void _setupConnection() {
 
         this.UUID_ = String.valueOf(UUID.randomUUID());
-        this.clientID = this.user.userId + "--" + this.UUID_;
+        this.clientID = this.user.id + "--" + this.UUID_;
         this.connect();
     }
 
@@ -130,7 +130,7 @@ public class StreamChat {
 
         String client_id = "\"client_id\":\""+ this.clientID + "\"";
         String user_id = "\"user_id\":\""+ this.userID + "\"";
-        String userString = "\"" +"id\":\"" + this.userID + "\"" + ",\"name\":" + "\"" + this.user.name + "\"" + ",\"image\":" + "\"" + this.user.imguser + "\"";
+        String userString = "\"" +"id\":\"" + this.userID + "\"" + ",\"name\":" + "\"" + this.user.name + "\"" + ",\"image\":" + "\"" + this.user.image + "\"";
         String user_details = "\"user_details\":{" + userString + "}";
         String user_token = "\"user_token\":\"" + this.userToken + "\"";
 
@@ -141,7 +141,7 @@ public class StreamChat {
 
         String token = "";
         if(this.anonymous == false){
-            token = this.userToken != null ? this.userToken : JWTUserToken("",user.userId,"","");
+            token = this.userToken != null ? this.userToken : JWTUserToken("",user.id,"","");
         }
 
         String authType = this.getAuthType();
@@ -149,7 +149,7 @@ public class StreamChat {
         this.wsURL = this.wsBaseURL + "/connect?json=" + qs + "&api_key="
                 + this.key + "&authorization=" + token + "&stream-auth-type=" + authType;
 
-        StableWSConnection wsConnection = new StableWSConnection(wsURL, clientID, user.userId/*, this.recoverState, this.handleEvent, this.dispatchEvent*/);
+        StableWSConnection wsConnection = new StableWSConnection(wsURL, clientID, user.id/*, this.recoverState, this.handleEvent, this.dispatchEvent*/);
 
         wsConnection.connect();
 

@@ -18,21 +18,30 @@ import okhttp3.Response;
 
 public class Channel {
 
-    static public String type , id;
+    static public String type , id ,cid;
+    String last_message_at;
+    User create_by;
+    boolean frozen;
+    int member_count;
+    String name,image;
+    int session;
+
     Boolean isTyping, initialized;
-    static public String cid;
     static public StreamChat client;
     ChannelState state;
     String lastTypingEvent;
-    String _data,data;
 
-    String name,image;
-    String[] members = {};
-    int session;
+    Config config = new Config();
 
 
 
-    public Channel(StreamChat client, String type, String id, String name,String image,String[] members, int session) {
+    public ArrayList<MessageModel> messageLists = new ArrayList<MessageModel>();
+    ArrayList<Member> members = new ArrayList<Member>();
+
+
+
+
+    public Channel(StreamChat client, String type, String id, String name,String image,ArrayList<Member> members, int session) {
 
         String validTypeRe = "/^[\\w_-]+$/";
         String validIDRe = "/^[\\w_-]+$/";
@@ -41,9 +50,7 @@ public class Channel {
         this.type = type;
         this.id = id;
         // used by the frontend, gets updated:
-        this.data = data;
-        // this._data is used for the requests...
-//        this._data = { ...data };
+
 
         this.cid = type + ":" + id;
         // perhaps the state variable should be private
@@ -103,14 +110,14 @@ public class Channel {
         if(state.watchers.size() > 0) {
             for(int i = 0; i < state.watchers.size(); i++) {
                 User watcher = state.watchers.get(i);
-                this.state.watchers.set(Integer.parseInt(watcher.userId), watcher);
+                this.state.watchers.set(Integer.parseInt(watcher.id), watcher);
             }
         }
 
         if(state.members.size() > 0) {
             for(int i = 0; i < state.members.size(); i++) {
                 User members = state.members.get(i);
-                this.state.members.set(Integer.parseInt(members.userId), members);
+                this.state.members.set(Integer.parseInt(members.id), members);
             }
         }
     }
@@ -127,7 +134,7 @@ public class Channel {
         }
 
         FormBody.Builder formBuilder = new FormBody.Builder()
-                .add("data", String.valueOf(this.data))
+                .add("data", String.valueOf(""))
                 .add("watch", String.valueOf(false))
                 .add("state", String.valueOf(false))
                 .add("presence", String.valueOf(false));
@@ -154,8 +161,9 @@ public class Channel {
 
             JSONArray memArray = new JSONArray();
 
-            for(int i=0;i<this.members.length;i++){
-                memArray.put(members[i]);
+
+            for(int i=0;i<this.members.size();i++){
+                memArray.put(members.get(i).user.id);
             }
 
 
@@ -163,8 +171,8 @@ public class Channel {
                     .put("name", this.name)
                     .put("image", this.image)
                     .put("members",memArray)
-                    .put("session",this.session)
-                    .put("state",true))
+                    .put("session",this.session))
+                    .put("state",true)
                     .toString();
 
 
@@ -172,14 +180,14 @@ public class Channel {
             e.printStackTrace();
         }
 
-        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(JSON, jsonData);
 
 
 
         OkHttpClient client = new OkHttpClient();
 
-        Request request = new Request.Builder()
+        final Request request = new Request.Builder()
                 .url(this.client.baseURL + "/channels/" + type + "/" + id + "/query?api_key=" + this.client.key)
                 .post(body)
                 .addHeader("Authorization", this.client.userToken)
@@ -198,7 +206,130 @@ public class Channel {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
 
-            }
+                if(response.code() == 200){
+                    String jsonData = response.body().string();
+                    try {
+                        //JsonData
+                        JSONObject jsonObj = new JSONObject(jsonData);
+
+
+                        //Channel
+
+                        JSONObject channelObject = jsonObj.getJSONObject("channel");
+
+                        id = channelObject.getString("id");
+                        type = channelObject.getString("type");
+                        cid = channelObject.getString("cid");
+                        last_message_at = channelObject.getString("last_message_at");
+
+                        JSONObject createby = channelObject.getJSONObject("created_by");
+
+                        create_by = new User();
+
+                        create_by.id = createby.getString("id");
+                        create_by.role = createby.getString("role");
+                        create_by.created_at = createby.getString("created_at");
+                        create_by.updated_at = createby.getString("updated_at");
+                        create_by.last_active = createby.getString("last_active");
+                        create_by.online = createby.getBoolean("online");
+                        create_by.name = createby.getString("name");
+                        create_by.image = createby.getString("image");
+
+                        frozen = channelObject.getBoolean("frozen");
+                        member_count = channelObject.getInt("member_count");
+
+
+                        //Config
+
+                        JSONObject configObject = channelObject.getJSONObject("config");
+                        config.created_at = configObject.getString("created_at");
+                        config.updated_at = configObject.getString("updated_at");
+                        config.name = configObject.getString("name");
+                        config.typing_events = configObject.getBoolean("typing_events");
+                        config.read_events = configObject.getBoolean("read_events");
+                        config.connect_events = configObject.getBoolean("connect_events");
+                        config.search = configObject.getBoolean("search");
+                        config.reactions = configObject.getBoolean("reactions");
+                        config.replies = configObject.getBoolean("replies");
+                        config.mutes = configObject.getBoolean("mutes");
+                        config.message_retention = configObject.getString("message_retention");
+                        config.max_message_length = configObject.getInt("max_message_length");
+                        config.automod = configObject.getString("automod");
+
+
+
+
+                        //Messages
+
+                        JSONArray messages = jsonObj.getJSONArray("messages");
+                        for (int i=0;i<messages.length();i++){
+                            JSONObject message = messages.getJSONObject(i);
+
+                            //Message
+                            MessageModel messageModel = new MessageModel();
+
+                            messageModel.id = message.getString("id");
+                            messageModel.text = message.getString("text");
+
+                            User user = new User();
+
+                            JSONObject userObject = message.getJSONObject("user");
+
+                            user.id = userObject.getString("id");
+                            user.role = userObject.getString("role");
+                            user.created_at = userObject.getString("created_at");
+                            user.updated_at = userObject.getString("updated_at");
+                            user.last_active = userObject.getString("last_active");
+                            user.online = userObject.getBoolean("online");
+                            user.name = userObject.getString("name");
+                            user.image = userObject.getString("image");
+
+                            messageModel.user = user;
+
+
+//                            messageModel.reaction_counts = message.getInt("reaction_counts");
+                            messageModel.reply_count = message.getInt("reply_count");
+
+                            messageModel.create_at = message.getString("created_at");
+                            messageModel.updated_at = message.getString("updated_at");
+
+                            messageLists.add( messageModel);
+                        }
+
+                        //Members
+
+                        members.clear();
+                        JSONArray membersObject = jsonObj.getJSONArray("members");
+                        for (int i=0;i<membersObject.length();i++) {
+
+                            Member member = new Member();
+                            JSONObject user = membersObject.getJSONObject(i).getJSONObject("user");
+                            member.user.id = user.getString("id");
+                            member.user.role = user.getString("role");
+                            member.user.created_at = user.getString("created_at");
+                            member.user.updated_at = user.getString("updated_at");
+                            member.user.last_active = user.getString("last_active");
+                            member.user.online = user.getBoolean("online");
+                            member.user.image = user.getString("image");
+                            member.user.name = user.getString("name");
+
+
+                            members.add(member);
+                        }
+
+
+
+
+
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
+             }
 
         });
 

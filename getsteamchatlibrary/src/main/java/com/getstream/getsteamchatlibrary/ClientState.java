@@ -14,7 +14,7 @@ public class ClientState {
 
     public void updateUser(User user) {
         if(user != null){
-            this.users.set(Integer.valueOf(user.userId),user);
+            this.users.set(Integer.valueOf(user.id),user);
         }
     }
 }
