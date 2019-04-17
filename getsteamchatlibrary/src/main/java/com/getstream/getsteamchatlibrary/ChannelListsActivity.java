@@ -12,6 +12,9 @@ public class ChannelListsActivity extends Activity{
     static StreamChat client = null;
     static  User me = new User();
     ChannelListAdapter channelListAdapter;
+
+    static User you = new User();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,8 +29,13 @@ public class ChannelListsActivity extends Activity{
         me.image = "https://bit.ly/2u9Vc0r";
 
 
+//        me.id = "sergey-n";
+//        me.name = "Sergey N";
+//        me.image = "https://bit.ly/2Uumxti";
 
         client.setUser(me, Signing.JWTUserToken("v4dg6xc6kr6ygsvb2ej5j953ybjqddc9pjgvdqh6suag6hyhr2ezfctq6ez62qhq",me.id,"1","1"));
+
+//        client.setUser(you, Signing.JWTUserToken("v4dg6xc6kr6ygsvb2ej5j953ybjqddc9pjgvdqh6suag6hyhr2ezfctq6ez62qhq",you.id,"1","1"));
 
         ListView list_channels = (ListView)findViewById(R.id.list_channels);
         channelListAdapter = new ChannelListAdapter(this,client.activeChannels);

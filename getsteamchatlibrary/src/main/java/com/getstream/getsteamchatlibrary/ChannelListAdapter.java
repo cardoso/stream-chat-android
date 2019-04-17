@@ -64,9 +64,9 @@ public class ChannelListAdapter extends BaseAdapter {
         String channelName = "";
         ArrayList<Member> members = mChannelList.get(position).members;
         for (int i = 0; i < members.size(); i++){
-            channelName = members.get(i).user.name;
+            channelName += members.get(i).user.name;
             if (i < members.size()-1){
-                channelName += ", ";
+                channelName +=  ", ";
             }
         }
 
@@ -75,15 +75,18 @@ public class ChannelListAdapter extends BaseAdapter {
         ArrayList<MessageModel> messages = new ArrayList<MessageModel>();
         messages = mChannelList.get(position).messageLists;
 
+
+
         if(messages.size() > 0){
-            messageText.setText(messages.get(messages.size()-1).text);
+            MessageModel lastMsg = messages.get(messages.size()-1);
+            messageText.setText(lastMsg.text);
+            CircleImageView img_last_seen_avatar = vi.findViewById(R.id.img_last_seen_avatar);
+            Picasso.with(mContext).load(lastMsg.user.image).into(img_last_seen_avatar);
         }else{
             messageText.setText("Start Conversation");
         }
 
         Picasso.with(mContext).load(mChannelList.get(position).members.get(0).user.image).into(img_avtar);
-
-
 
 
 //        messageText.setText(mMessageList.get(i).text);

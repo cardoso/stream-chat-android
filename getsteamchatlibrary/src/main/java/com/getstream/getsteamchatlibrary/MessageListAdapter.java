@@ -7,10 +7,14 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MessageListAdapter extends BaseAdapter {
 
@@ -45,21 +49,36 @@ public class MessageListAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
 
+        boolean issent = true;
         View vi = view;
-        if(vi == null){
-            vi = inflater.inflate(R.layout.item_message_sent,null);
+        MessageModel mMessage = mMessageList.get(i);
+//        if(vi == null){
+            if(mMessage.user.id.equals(ChannelListsActivity.me.id)){
+                vi = inflater.inflate(R.layout.item_message_sent,null);
+                issent = true;
+            }else{
+                vi = inflater.inflate(R.layout.item_message_received,null);
+                issent = false;
+            }
+
+//        }
+
+        if(!issent){
+            TextView message_name = (TextView)vi.findViewById(R.id.text_message_name);
+            message_name.setText(mMessage.user.name);
+            CircleImageView img_profile = vi.findViewById(R.id.image_message_profile);
+            Picasso.with(mContext).load(mMessage.user.image).into(img_profile);
+//            img_profile.setImageURI(Uri.parse(mMessage.user.image));
         }
 
         TextView messageText, timeText;
         messageText = (TextView) vi.findViewById(R.id.text_message_body);
         timeText = (TextView) vi.findViewById(R.id.text_message_time);
 
-        messageText.setText(mMessageList.get(i).text);
-
-
+        messageText.setText(mMessage.text);
 
         SimpleDateFormat localDateFormat = new SimpleDateFormat("HH:mm");
-        String oldstring = mMessageList.get(i).updated_at;
+        String oldstring = mMessage.updated_at;
 
         Date date= null;
         try {
