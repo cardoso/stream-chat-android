@@ -18,7 +18,7 @@ import okhttp3.Response;
 
 public class Channel {
 
-    static public String type , id ,cid;
+    String type , id,cid;
     String last_message_at;
     User create_by;
     boolean frozen;
@@ -36,7 +36,7 @@ public class Channel {
 
 
     public ArrayList<MessageModel> messageLists = new ArrayList<MessageModel>();
-    static ArrayList<Member> members = new ArrayList<Member>();
+    public ArrayList<Member> members = new ArrayList<Member>();
 
 
 
@@ -90,7 +90,7 @@ public class Channel {
     }
 
 
-    static String _channelURL() {
+    String _channelURL() {
         if(id == null){
             return "";
         }
@@ -99,7 +99,7 @@ public class Channel {
     }
 
 
-    static public void sendMessage(String message){
+    public void sendMessage(String message){
 
         String jsonData="";
         try {
@@ -113,7 +113,7 @@ public class Channel {
             e.printStackTrace();
         }
 
-        client.post(_channelURL() + "/message" + "?api_key=" + client.key,jsonData);
+        ChannelListsActivity.client.post(_channelURL() + "/message" + "?api_key=" + client.key,jsonData);
 
     }
 

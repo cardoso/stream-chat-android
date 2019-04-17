@@ -1,8 +1,11 @@
 package com.getstream.getsteamchatlibrary;
 
+import android.os.AsyncTask;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import okhttp3.OkHttpClient;
@@ -13,7 +16,6 @@ import okhttp3.WebSocketListener;
 import okio.ByteString;
 
 public class StableWSConnection extends WebSocketListener {
-
 
 
     String wsURL, clientID,userID;
@@ -31,16 +33,14 @@ public class StableWSConnection extends WebSocketListener {
     EchoWebSocketListener listener;
     WebSocket ws;
 
+
     public MessageModel mMessage = new MessageModel();
 
     private final class EchoWebSocketListener extends WebSocketListener {
         private static final int NORMAL_CLOSURE_STATUS = 1000;
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
-//            webSocket.send("Hello, it's SSaurel !");
-//            webSocket.send("What's up ?");
-//            webSocket.send(ByteString.decodeHex("deadbeef"));
-//            webSocket.close(NORMAL_CLOSURE_STATUS, "Goodbye !");
+
 
             lastEvent = new Date();
 
@@ -59,8 +59,6 @@ public class StableWSConnection extends WebSocketListener {
             consecutiveFailures = 0;
             _startMonitor();
             _startHealthCheck();
-//            this.messageCallback()
-
             //
             try {
                 JSONObject jsonObject = new JSONObject(text);
@@ -70,6 +68,16 @@ public class StableWSConnection extends WebSocketListener {
                     JSONObject messageObject = jsonObject.getJSONObject("message");
                     mMessage = new JSONParser().parseMessageData(messageObject);
 
+                    ArrayList<Channel> activeChannels = ChannelListsActivity.client.activeChannels;
+
+                    for (int i = 0; i < activeChannels.size(); i++){
+                        if(activeChannels.get(i).cid.equals(cid)){
+                            activeChannels.get(i).messageLists.add(mMessage);
+                        }
+                    }
+
+
+                    new LongOperation().execute("");
 
                 }
             } catch (JSONException e) {
@@ -86,6 +94,8 @@ public class StableWSConnection extends WebSocketListener {
             consecutiveFailures = 0;
             _startMonitor();
             _startHealthCheck();
+
+
         }
         @Override
         public void onClosing(WebSocket webSocket, int code, String reason) {
@@ -137,15 +147,7 @@ public class StableWSConnection extends WebSocketListener {
         /** Every second we verify that we didn't miss any health checks */
         this.monitorInterval = 1 * 1000;
 
-//        this._listenForConnectionChanges();
     }
-
-//   void _listenForConnectionChanges(){
-//        if (typeof window !== 'undefined') {
-//            window.addEventListener('offline', this.onlineStatusChanged);
-//            window.addEventListener('online', this.onlineStatusChanged);
-//        }
-//    }
 
     void connect() {
 
@@ -245,5 +247,27 @@ public class StableWSConnection extends WebSocketListener {
         if(!healthy && this.isHealthy){
             this.isHealthy = false;
         }
+    }
+
+    private class LongOperation extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            return "Executed";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            // into onPostExecute() but that is upto you
+
+            MessageListActivity.mMessageAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        protected void onPreExecute() {}
+
+        @Override
+        protected void onProgressUpdate(Void... values) {}
     }
 }

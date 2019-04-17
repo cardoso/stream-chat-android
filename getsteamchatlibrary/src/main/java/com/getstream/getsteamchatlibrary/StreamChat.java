@@ -23,6 +23,11 @@ import static com.getstream.getsteamchatlibrary.Signing.UserFromToken;
 
 public class StreamChat {
 
+    interface MyCallBackInterface {
+        void onSuccess(String result);
+        void onFailure(String error, int nCode);
+    }
+
     static String key;
     String secret;
     static String userToken;
@@ -72,12 +77,12 @@ public class StreamChat {
 
         Channel channel = null;
         if(channelID.length()>0){
-            String cid = channelID + ":" + channelID;
+            String cid = channelType + ":" + channelID;
             for(int i=0;i<this.activeChannels.size();i++){
                 if(this.activeChannels.get(i).cid.equals(cid)){
                     channel = this.activeChannels.get(i);
 
-                    break;
+                    return channel;
                 }
             }
             channel = new Channel(this,channelType,channelID,name,image,members,session);
@@ -242,7 +247,7 @@ public class StreamChat {
         });
 
     }
-    static public void queryChannels(){
+    static public void queryChannels(final MyCallBackInterface callback){
 
         JSONArray memArray = new JSONArray();
         memArray.put(user.id);
@@ -251,10 +256,22 @@ public class StreamChat {
 //        }
 
         String queryChannels_url = baseURL + "/channels" + "?api_key=" +key + "&payload={\"filter_conditions\":{\"members\":{\"$in\":" + memArray.toString() + "}},\"sort\":[{\"field\":\"last_message_at\",\"direction\":-1}],\"state\":true,\"subscribe\":true,\"watch\":true}";
-        get(queryChannels_url);
+        get(queryChannels_url, new MyCallBackInterface() {
+            @Override
+            public void onSuccess(String result) {
+
+                callback.onSuccess(result);
+            }
+
+            @Override
+            public void onFailure(String error, int nCode) {
+
+                callback.onFailure(error,nCode);
+            }
+        });
 
     }
-    static void get(String url){
+    static void get(String url, final MyCallBackInterface callback){
         final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
 
@@ -280,9 +297,12 @@ public class StreamChat {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
 
-                if(response.code() == 200){
+                int code = response.code();
+                if(code == 200){
                     String jsonData = response.body().string();
 
+
+                    activeChannels.clear();
                     try {
                         JSONObject jsonObject = new JSONObject(jsonData);
                         JSONArray channelArray = jsonObject.getJSONArray("channels");
@@ -297,6 +317,9 @@ public class StreamChat {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+                    callback.onSuccess(jsonData);
+                }else{
+                    callback.onFailure("error",code);
                 }
 
             }
