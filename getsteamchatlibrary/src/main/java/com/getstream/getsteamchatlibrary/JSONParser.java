@@ -98,10 +98,10 @@ public class JSONParser {
         return channel;
     }
 
-    public MessageModel parseMessageData(JSONObject message) {
+    public Message parseMessageData(JSONObject message) {
 
         //Message
-        MessageModel messageModel = new MessageModel();
+        Message messageModel = new Message();
 
         try {
             messageModel.id = message.getString("id");

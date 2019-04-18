@@ -1,1 +1,1 @@
-include ':app', ':getsteamchatlibrary'
+include ':app', ':getsteamchatlibrary', ':chatkit'

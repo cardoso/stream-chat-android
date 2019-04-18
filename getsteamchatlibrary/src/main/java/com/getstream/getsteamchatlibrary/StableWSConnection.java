@@ -34,7 +34,7 @@ public class StableWSConnection extends WebSocketListener {
     WebSocket ws;
 
 
-    public MessageModel mMessage = new MessageModel();
+    public Message mMessage = new Message();
 
     private final class EchoWebSocketListener extends WebSocketListener {
         private static final int NORMAL_CLOSURE_STATUS = 1000;
@@ -261,7 +261,7 @@ public class StableWSConnection extends WebSocketListener {
         protected void onPostExecute(String result) {
             // into onPostExecute() but that is upto you
 
-            MessageListActivity.mMessageAdapter.notifyDataSetChanged();
+            MessageListActivity.messagesAdapter.addToStart(mMessage,true);
         }
 
         @Override

@@ -72,13 +72,13 @@ public class ChannelListAdapter extends BaseAdapter {
 
         nameText.setText(channelName);
 
-        ArrayList<MessageModel> messages = new ArrayList<MessageModel>();
+        ArrayList<Message> messages = new ArrayList<Message>();
         messages = mChannelList.get(position).messageLists;
 
 
 
         if(messages.size() > 0){
-            MessageModel lastMsg = messages.get(messages.size()-1);
+            Message lastMsg = messages.get(messages.size()-1);
             messageText.setText(lastMsg.text);
             CircleImageView img_last_seen_avatar = vi.findViewById(R.id.img_last_seen_avatar);
             Picasso.with(mContext).load(lastMsg.user.image).into(img_last_seen_avatar);

@@ -1,5 +1,7 @@
 package com.getstream.getsteamchatlibrary;
 
+import com.stfalcon.chatkit.commons.models.IDialog;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,7 +18,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class Channel {
+public class Channel implements IDialog<Message> {
 
     String type , id,cid;
     String last_message_at;
@@ -31,18 +33,20 @@ public class Channel {
     ChannelState state;
     String lastTypingEvent;
 
+    int unreadCount;
+
+    Message lastMessage = new Message();
+
     Config config = new Config();
 
 
 
-    public ArrayList<MessageModel> messageLists = new ArrayList<MessageModel>();
+    public ArrayList<Message> messageLists = new ArrayList<Message>();
     public ArrayList<Member> members = new ArrayList<Member>();
 
 
 
     public Channel(){
-        String validTypeRe = "/^[\\w_-]+$/";
-        String validIDRe = "/^[\\w_-]+$/";
 
         this.client = null;
         this.type = "";
@@ -61,13 +65,11 @@ public class Channel {
         this.image = "";
         this.session = 0;
         create_by = new User();
+        this.unreadCount = 0;
     }
 
 
     public Channel(StreamChat client, String type, String id, String name,String image,ArrayList<Member> members, int session) {
-
-        String validTypeRe = "/^[\\w_-]+$/";
-        String validIDRe = "/^[\\w_-]+$/";
 
         this.client = client;
         this.type = type;
@@ -292,7 +294,7 @@ public class Channel {
                             JSONObject message = messages.getJSONObject(i);
 
                             //Message
-                            MessageModel messageModel = new MessageModel();
+                            Message messageModel = new Message();
 
                             messageModel.id = message.getString("id");
                             messageModel.text = message.getString("text");
@@ -355,4 +357,50 @@ public class Channel {
 
     }
 
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public String getDialogPhoto() {
+        return image;
+    }
+
+    @Override
+    public String getDialogName() {
+        return name;
+    }
+
+    @Override
+    public ArrayList<User> getUsers() {
+
+        ArrayList<User> users = new ArrayList<User>();
+        for (int i = 0; i < members.size(); i++){
+            users.add(members.get(i).user);
+        }
+
+        return users;
+    }
+
+    @Override
+    public Message getLastMessage() {
+
+        return lastMessage;
+    }
+
+    @Override
+    public void setLastMessage(Message message) {
+        if(messageLists.size() > 0){
+            lastMessage = messageLists.get(messageLists.size()-1);
+        }
+    }
+
+    @Override
+    public int getUnreadCount() {
+        return unreadCount;
+    }
+    public void setUnreadCount(int unreadCount) {
+        this.unreadCount = unreadCount;
+    }
 }
