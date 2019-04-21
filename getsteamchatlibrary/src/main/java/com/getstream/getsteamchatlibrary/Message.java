@@ -3,27 +3,28 @@ package com.getstream.getsteamchatlibrary;
 import android.support.annotation.Nullable;
 
 import com.stfalcon.chatkit.commons.models.IMessage;
+import com.stfalcon.chatkit.commons.models.IUser;
 import com.stfalcon.chatkit.commons.models.MessageContentType;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
-public class Message implements IMessage, MessageContentType.Image, /*this is for default image messages implementation*/
-        MessageContentType {
+public class Message{
 
     /*...*/
 
     public String id;
     public String text;
-    public String type;
     public User user;
     int reaction_counts,reply_count;
     public String create_at,updated_at;
     String status;
     private Image image;
     private Voice voice;
+    ArrayList<Attachment> attachments = new ArrayList<Attachment>();
 
     int parent_id;
     boolean show_in_channel;
@@ -44,26 +45,24 @@ public class Message implements IMessage, MessageContentType.Image, /*this is fo
         status = "";
         durations = "";
     }
-    public String getStatus() {
-        return "Sent";
+
+    public String getType(){
+        return attachments.get(0).type;
     }
-    @Override
+
     public String getId() {
         return id;
     }
 
-    @Override
-    public String getText() {
+    public String getMessage() {
         return text;
     }
 
-    @Override
     public User getUser() {
         return user;
     }
 
-    @Override
-    public Date getCreatedAt() {
+    public Date getCreatedAt(){
 
         Date date= null;
         try {
@@ -71,11 +70,29 @@ public class Message implements IMessage, MessageContentType.Image, /*this is fo
         } catch (ParseException e) {
             e.printStackTrace();
         }
+        try {
+            date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSX").parse(create_at);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+    public Date getUpdatedAt(){
+
+        Date date= null;
+        try {
+            date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSX").parse(updated_at);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        try {
+            date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSX").parse(updated_at);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         return date;
     }
 
-    @Nullable
-    @Override
     public String getImageUrl() {
         return image == null ? null : image.url;
     }
@@ -91,6 +108,11 @@ public class Message implements IMessage, MessageContentType.Image, /*this is fo
 
         this.create_at = strDate;
     }
+
+    public String getStatus() {
+        return "Sent";
+    }
+
 
     public static class Image {
 

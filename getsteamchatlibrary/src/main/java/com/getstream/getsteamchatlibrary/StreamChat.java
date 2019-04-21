@@ -23,6 +23,10 @@ import static com.getstream.getsteamchatlibrary.Signing.UserFromToken;
 
 public class StreamChat {
 
+    public static User getCurrentUser() {
+        return user;
+    }
+
     interface MyCallBackInterface {
         void onSuccess(String result);
         void onFailure(String error, int nCode);

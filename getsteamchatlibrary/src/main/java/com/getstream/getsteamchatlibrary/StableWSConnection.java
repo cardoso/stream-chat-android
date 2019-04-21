@@ -77,6 +77,7 @@ public class StableWSConnection extends WebSocketListener {
                     }
 
 
+//                    MessageListActivity.mChannel.messageLists.add(mMessage);
                     new LongOperation().execute("");
 
                 }
@@ -261,7 +262,8 @@ public class StableWSConnection extends WebSocketListener {
         protected void onPostExecute(String result) {
             // into onPostExecute() but that is upto you
 
-            MessageListActivity.messagesAdapter.addToStart(mMessage,true);
+            MessageListActivity.messageListAdapter.notifyDataSetChanged();
+//            MessageListActivity.mRecyclerView.smoothScrollToPosition(MessageListActivity.mChannel.messageLists.size()-1);
         }
 
         @Override

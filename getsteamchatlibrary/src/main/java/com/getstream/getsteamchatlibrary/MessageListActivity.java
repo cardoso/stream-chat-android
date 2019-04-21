@@ -1,36 +1,54 @@
 package com.getstream.getsteamchatlibrary;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.ImageView;
-import android.widget.Toast;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-import com.getstream.getsteamchatlibrary.messages.CustomIncomingImageMessageViewHolder;
-import com.getstream.getsteamchatlibrary.messages.CustomIncomingTextMessageViewHolder;
-import com.getstream.getsteamchatlibrary.messages.CustomOutcomingImageMessageViewHolder;
-import com.getstream.getsteamchatlibrary.messages.CustomOutcomingTextMessageViewHolder;
-import com.squareup.picasso.Picasso;
-import com.stfalcon.chatkit.commons.ImageLoader;
-import com.stfalcon.chatkit.messages.MessageHolders;
-import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
 import java.util.ArrayList;
 
-public class MessageListActivity extends AppCompatActivity implements MessagesListAdapter.SelectionListener,
-        MessagesListAdapter.OnLoadMoreListener, MessagesListAdapter.OnMessageLongClickListener<Message>{
+public class MessageListActivity extends AppCompatActivity{
 
-    static MessagesListAdapter<Message> messagesAdapter;
     MessagesList messagesList;
 
-    Channel channel;
+
+    private RelativeLayout mRootLayout;
+    static RecyclerView mRecyclerView;
+    public static MessageListAdapter messageListAdapter;
+    private LinearLayoutManager mLayoutManager;
+    private EditText mMessageEditText;
+    private Button mMessageSendButton;
+    private ImageButton mUploadFileButton;
+    private View mCurrentEventLayout;
+    private TextView mCurrentEventText;
+
+    private static final int STATE_NORMAL = 0;
+    private static final int STATE_EDIT = 1;
+    private int mCurrentState = STATE_NORMAL;
+
+    private Message mEditingMessage = null;
+    private InputMethodManager mIMM;
+
+    static Channel mChannel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
 
+        mIMM = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         String channelType = getIntent().getStringExtra("channelType");
         String channelId = getIntent().getStringExtra("channelId");
@@ -42,9 +60,125 @@ public class MessageListActivity extends AppCompatActivity implements MessagesLi
         members.add(member);
 
 
-        channel = ChannelListsActivity.client.channel(channelType,channelId,"Private Chat About the Kingdom","https://bit.ly/2F3KEoM", members,8);
+        mChannel = ChannelListsActivity.client.channel(channelType, channelId, "Private Chat About the Kingdom", "https://bit.ly/2F3KEoM", members, 8);
 
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_group_chat);
+
+        mCurrentEventLayout = findViewById(R.id.layout_group_chat_current_event);
+        mCurrentEventText = (TextView) findViewById(R.id.text_group_chat_current_event);
+
+        mMessageEditText = (EditText) findViewById(R.id.edittext_group_chat_message);
+        mMessageSendButton = (Button) findViewById(R.id.button_group_chat_send);
+        mUploadFileButton = (ImageButton) findViewById(R.id.button_group_chat_upload);
+
+
+
+        messageListAdapter = new MessageListAdapter(this, mChannel.messageLists);
+        mLayoutManager = new LinearLayoutManager(this);
+        mLayoutManager.setReverseLayout(false);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setAdapter(messageListAdapter);
+        mRecyclerView.smoothScrollToPosition(mChannel.messageLists.size()-1);
+
+        mMessageEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() > 0) {
+                    mMessageSendButton.setEnabled(true);
+                } else {
+                    mMessageSendButton.setEnabled(false);
+                }
+            }
+        });
+        mMessageSendButton.setEnabled(false);
+
+        mMessageSendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mCurrentState == STATE_EDIT) {
+                    String userInput = mMessageEditText.getText().toString();
+                    if (userInput.length() > 0) {
+                        if (mEditingMessage != null) {
+                            editMessage(mEditingMessage, userInput);
+                        }
+                    }
+                    setState(STATE_NORMAL, null, -1);
+                } else {
+                    String newMessage = mMessageEditText.getText().toString();
+                    if (newMessage.length() > 0) {
+                        if(mChannel == null){
+                            return;
+                        }
+                        mChannel.sendMessage(newMessage);
+                        mMessageEditText.setText("");
+                    }
+                }
+            }
+        });
+
+    }
+
+    private void editMessage(final Message message, String editedMessage) {
+        if (mChannel == null) {
+            return;
+        }
+
+    }
+    private void setState(int state, Message editingMessage, final int position) {
+        switch (state) {
+            case STATE_NORMAL:
+                mCurrentState = STATE_NORMAL;
+                mEditingMessage = null;
+
+                mUploadFileButton.setVisibility(View.VISIBLE);
+                mMessageSendButton.setText("SEND");
+                mMessageEditText.setText("");
+                break;
+
+            case STATE_EDIT:
+                mCurrentState = STATE_EDIT;
+                mEditingMessage = editingMessage;
+
+                mUploadFileButton.setVisibility(View.GONE);
+                mMessageSendButton.setText("SAVE");
+                String messageString = ((Message)editingMessage).getMessage();
+                if (messageString == null) {
+                    messageString = "";
+                }
+                mMessageEditText.setText(messageString);
+                if (messageString.length() > 0) {
+                    mMessageEditText.setSelection(0, messageString.length());
+                }
+
+                mMessageEditText.requestFocus();
+                mMessageEditText.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mIMM.showSoftInput(mMessageEditText, 0);
+
+                        mRecyclerView.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                mRecyclerView.scrollToPosition(position);
+                            }
+                        }, 500);
+                    }
+                }, 100);
+                break;
+        }
+    }
+
+        /*
         // Message Input
+
 
         MessageInput messageInput = (MessageInput) findViewById(R.id.input);
         messagesList = (MessagesList)findViewById(R.id.messagesList);
@@ -144,4 +278,6 @@ public class MessageListActivity extends AppCompatActivity implements MessagesLi
     public void onMessageLongClick(Message message) {
 
     }
+
+    */
 }

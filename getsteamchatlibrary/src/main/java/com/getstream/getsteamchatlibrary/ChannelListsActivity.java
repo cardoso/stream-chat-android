@@ -1,29 +1,17 @@
 package com.getstream.getsteamchatlibrary;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ImageView;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 
-import com.getstream.getsteamchatlibrary.channels.CustomDialogViewHolder;
-import com.getstream.getsteamchatlibrary.fixtures.DialogsFixtures;
-import com.squareup.picasso.Picasso;
-import com.stfalcon.chatkit.commons.ImageLoader;
-import com.stfalcon.chatkit.dialogs.DialogsList;
-import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
-
-public class ChannelListsActivity extends Activity implements DialogsListAdapter.OnDialogClickListener<Channel>,
-        DialogsListAdapter.OnDialogLongClickListener<Channel> {
-
-
-    ImageLoader imageLoader;
-    DialogsListAdapter<Channel> dialogsAdapter;
+public class ChannelListsActivity extends Activity{
 
     static StreamChat client = null;
     static  User me = new User();
-//    ChannelListAdapter channelListAdapter;
-
-    DialogsList dialogsList;
+    ChannelListAdapter channelListAdapter;
 
     static User you = new User();
 
@@ -31,13 +19,6 @@ public class ChannelListsActivity extends Activity implements DialogsListAdapter
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_channel_lists);
-
-        imageLoader = new ImageLoader() {
-            @Override
-            public void loadImage(ImageView imageView, String url, Object payload) {
-                Picasso.with(ChannelListsActivity.this).load(url).into(imageView);
-            }
-        };
 
 
         client = new StreamChat("xjtb8skbgnrr","","");
@@ -56,12 +37,9 @@ public class ChannelListsActivity extends Activity implements DialogsListAdapter
 
 //        client.setUser(you, Signing.JWTUserToken("v4dg6xc6kr6ygsvb2ej5j953ybjqddc9pjgvdqh6suag6hyhr2ezfctq6ez62qhq",you.id,"1","1"));
 
-
-        dialogsList = (DialogsList) findViewById(R.id.channelsList);
-
-
-        initAdapter();
-
+        ListView list_channels = (ListView)findViewById(R.id.list_channels);
+        channelListAdapter = new ChannelListAdapter(this,client.activeChannels);
+        list_channels.setAdapter(channelListAdapter);
         client.queryChannels(new StreamChat.MyCallBackInterface() {
             @Override
             public void onSuccess(String result) {
@@ -69,7 +47,7 @@ public class ChannelListsActivity extends Activity implements DialogsListAdapter
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
+                        channelListAdapter.notifyDataSetChanged();
                     }
                 });
 
@@ -81,31 +59,43 @@ public class ChannelListsActivity extends Activity implements DialogsListAdapter
             }
         });
 
+        list_channels.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(ChannelListsActivity.this,MessageListActivity.class);
+                String channelType = client.activeChannels.get(i).type;
+                String channelid = client.activeChannels.get(i).id;
+                intent.putExtra("channelType",channelType);
+                intent.putExtra("channelId",channelid);
+                startActivity(intent);
+            }
+        });
+
 //        final Channel channel = client.channel("messaging","the-small-councli","Private Chat About the Kingdom","https://bit.ly/2F3KEoM", members,8);
 //        channel.watch();
 
     }
-    private void initAdapter() {
-        dialogsAdapter = new DialogsListAdapter<>(
-                R.layout.item_custom_dialog_view_holder,
-                CustomDialogViewHolder.class,
-                imageLoader);
 
-        dialogsAdapter.setItems(DialogsFixtures.getDialogs());
+    /*
+    private class LongOperation extends AsyncTask<String, Void, String> {
 
-        dialogsAdapter.setOnDialogClickListener(this);
-        dialogsAdapter.setOnDialogLongClickListener(this);
+        @Override
+        protected String doInBackground(String... params) {
 
-        dialogsList.setAdapter(dialogsAdapter);
+            return "Executed";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            // into onPostExecute() but that is upto you
+            channelListAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        protected void onPreExecute() {}
+
+        @Override
+        protected void onProgressUpdate(Void... values) {}
     }
-
-    @Override
-    public void onDialogClick(Channel channel) {
-        Toast.makeText(this, channel.getDialogName() , Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onDialogLongClick(Channel dialog) {
-
-    }
+    */
 }

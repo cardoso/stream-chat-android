@@ -14,4 +14,15 @@ public class Member {
         updated_at = "";
     }
 
+    public String getProfileUrl() {
+        return user.image;
+    }
+
+    public String getUserId() {
+        return user.id;
+    }
+
+    public String getNickname() {
+        return user.name;
+    }
 }

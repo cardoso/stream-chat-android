@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -18,7 +19,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class Channel implements IDialog<Message> {
+public class Channel{
 
     String type , id,cid;
     String last_message_at;
@@ -89,6 +90,7 @@ public class Channel implements IDialog<Message> {
         this.members = members;
         this.session = session;
         create_by = new User();
+        this.unreadCount = 0;
     }
 
 
@@ -357,22 +359,18 @@ public class Channel implements IDialog<Message> {
 
     }
 
-    @Override
     public String getId() {
         return id;
     }
 
-    @Override
     public String getDialogPhoto() {
         return image;
     }
 
-    @Override
     public String getDialogName() {
         return name;
     }
 
-    @Override
     public ArrayList<User> getUsers() {
 
         ArrayList<User> users = new ArrayList<User>();
@@ -383,24 +381,34 @@ public class Channel implements IDialog<Message> {
         return users;
     }
 
-    @Override
     public Message getLastMessage() {
 
         return lastMessage;
     }
 
-    @Override
     public void setLastMessage(Message message) {
         if(messageLists.size() > 0){
             lastMessage = messageLists.get(messageLists.size()-1);
         }
     }
 
-    @Override
     public int getUnreadCount() {
         return unreadCount;
     }
     public void setUnreadCount(int unreadCount) {
         this.unreadCount = unreadCount;
+    }
+
+    public String getUrl() {
+        return image;
+    }
+
+    public int getMemberCount() {
+        return members.size();
+    }
+
+    public List<Member> getMembers() {
+
+        return members;
     }
 }

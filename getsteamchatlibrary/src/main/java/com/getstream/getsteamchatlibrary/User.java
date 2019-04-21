@@ -2,7 +2,7 @@ package com.getstream.getsteamchatlibrary;
 
 import com.stfalcon.chatkit.commons.models.IUser;
 
-public class User implements IUser {
+public class User{
 
     public String id;
     String role;
@@ -10,12 +10,6 @@ public class User implements IUser {
     boolean online;
     public String name,image;
 
-    public User(String id, String name, String image, boolean online) {
-        this.id = id;
-        this.name = name;
-        this.image = image;
-        this.online = online;
-    }
 
     public User() {
 
@@ -28,17 +22,14 @@ public class User implements IUser {
         image = "";
     }
 
-    @Override
-    public String getId() {
+    public String getUserId() {
         return id;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public String getAvatar() {
         return image;
     }
@@ -47,4 +38,7 @@ public class User implements IUser {
         return online;
     }
 
+    public String getProfileUrl() {
+        return image;
+    }
 }

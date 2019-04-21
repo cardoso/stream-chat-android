@@ -1,5 +1,7 @@
 package com.getstream.getsteamchatlibrary;
 
+import com.google.gson.JsonArray;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -98,29 +100,42 @@ public class JSONParser {
         return channel;
     }
 
-    public Message parseMessageData(JSONObject message) {
+    public Message parseMessageData(JSONObject messageObject) {
 
         //Message
-        Message messageModel = new Message();
+        Message message = new Message();
 
         try {
-            messageModel.id = message.getString("id");
-            messageModel.text = message.getString("text");
+            message.id = messageObject.getString("id");
+            message.text = messageObject.getString("text");
 
-            messageModel.user = parseUserData(message);
+            message.user = parseUserData(messageObject);
+
+            JSONArray attachmentObject = messageObject.getJSONArray("attachments");
+            if(attachmentObject.length() > 0){
+                for (int i = 0; i< attachmentObject.length(); i++){
+                    Attachment attachment = new Attachment();
+                    attachment.type = attachmentObject.getJSONObject(i).getString("type");
+                    attachment.thumb_url = attachmentObject.getJSONObject(i).getString("thumb_url");
+                    attachment.asset_url = attachmentObject.getJSONObject(i).getString("asset_url");
+                    attachment.myCustomField = attachmentObject.getJSONObject(i).getInt("myCustomField");
+
+                    message.attachments.add(attachment);
+                }
+            }
 
 
             //messageModel.reaction_counts = message.getInt("reaction_counts");
-            messageModel.reply_count = message.getInt("reply_count");
+            message.reply_count = messageObject.getInt("reply_count");
 
-            messageModel.create_at = message.getString("created_at");
-            messageModel.updated_at = message.getString("updated_at");
+            message.create_at = messageObject.getString("created_at");
+            message.updated_at = messageObject.getString("updated_at");
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        return messageModel;
+        return message;
 
 
     }

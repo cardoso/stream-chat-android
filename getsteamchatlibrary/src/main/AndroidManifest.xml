@@ -2,10 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.getstream.getsteamchatlibrary">
 
-
     <application>
-
-        <activity android:name=".MessageListActivity"></activity>
+        <activity android:name=".utils.MediaPlayerActivity" />
+        <activity android:name=".utils.PhotoViewerActivity" />
+        <activity android:name=".MessageListActivity" />
         <activity android:name=".ChannelListsActivity" />
     </application>
 
