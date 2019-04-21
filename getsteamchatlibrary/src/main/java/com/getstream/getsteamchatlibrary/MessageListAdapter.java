@@ -39,12 +39,21 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int i) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
+        switch (viewType) {
+            case VIEW_TYPE_USER_MESSAGE_ME:
+                View myUserMsgView = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.list_item_group_chat_user_me, parent, false);
+                return new MyUserMessageHolder(myUserMsgView);
+            case VIEW_TYPE_USER_MESSAGE_OTHER:
+                View otherUserMsgView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.list_item_group_chat_user_other, parent, false);
+                return new OtherUserMessageHolder(otherUserMsgView);
+                default:
+                    return null;
+        }
 
-        View myUserMsgView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item_group_chat_user_me, parent, false);
-        return new MyUserMessageHolder(myUserMsgView);
     }
     @Override
     public int getItemViewType(int position) {
@@ -90,14 +99,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             // If the date of the previous message is different, display the date before the message,
             // and also set isContinuous to false to show information such as the sender's nickname
             // and profile image.
-            if(position == 46){
-                if (!DateUtils.hasSameDate(message.getCreatedAt(), prevMessage.getCreatedAt())) {
-                    isNewDay = true;
-                    isContinuous = false;
-                } else {
-                    isContinuous = isContinuous(message, prevMessage);
-                }
-            }
+
             if (!DateUtils.hasSameDate(message.getCreatedAt(), prevMessage.getCreatedAt())) {
                 isNewDay = true;
                 isContinuous = false;
@@ -113,8 +115,8 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 ((MyUserMessageHolder) holder).bind(mContext, (Message) message, isContinuous, isNewDay, position);
                 break;
             case VIEW_TYPE_USER_MESSAGE_OTHER:
-//                ((OtherUserMessageHolder) holder).bind(mContext, (Message) message, isNewDay, isContinuous, position);
-                ((MyUserMessageHolder) holder).bind(mContext, (Message) message, isContinuous, isNewDay, position);
+                ((OtherUserMessageHolder) holder).bind(mContext, (Message) message, isNewDay, isContinuous, position);
+//                ((MyUserMessageHolder) holder).bind(mContext, (Message) message, isContinuous, isNewDay, position);
                 break;
 
         }
@@ -197,7 +199,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 dateText.setVisibility(View.GONE);
             }
 
-//            urlPreviewContainer.setVisibility(View.GONE);
+            urlPreviewContainer.setVisibility(View.GONE);
 //            if (message.getCustomType().equals(URL_PREVIEW_CUSTOM_TYPE)) {
 //                try {
 //                    urlPreviewContainer.setVisibility(View.VISIBLE);
