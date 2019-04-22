@@ -12,4 +12,12 @@ public class Attachment {
         asset_url = "";
         myCustomField = 0;
     }
+
+    public String getThumbnail() {
+        return  thumb_url;
+    }
+
+    public String getType() {
+        return type;
+    }
 }

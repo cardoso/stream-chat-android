@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.dinuscxj.progressbar.CircleProgressBar;
@@ -134,6 +135,9 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         TextView urlPreviewSiteNameText, urlPreviewTitleText, urlPreviewDescriptionText;
         ImageView urlPreviewMainImageView;
         View padding;
+        NonScrollListView list_attachment;
+        AttachmentListAdapter attachmentListAdapter;
+
 
         MyUserMessageHolder(View itemView) {
             super(itemView);
@@ -152,16 +156,28 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             // Dynamic padding that can be hidden or shown based on whether the message is continuous.
             padding = itemView.findViewById(R.id.view_group_chat_padding);
+
+            list_attachment = (NonScrollListView) itemView.findViewById(R.id.list_attachment);
+
         }
 
         void bind(Context context, final Message message, boolean isContinuous, boolean isNewDay, final int position) {
             messageText.setText(message.getMessage());
             timeText.setText(DateUtils.formatTime(message.getCreatedAt()));
 
+            attachmentListAdapter = new AttachmentListAdapter(mContext,message.attachments,true);
+            list_attachment.setAdapter(attachmentListAdapter);
+
             if (message.getUpdatedAt().compareTo(message.getCreatedAt()) > 0) {
                 editedText.setVisibility(View.VISIBLE);
             } else {
                 editedText.setVisibility(View.GONE);
+            }
+
+            if(message.getMessage().equals("")){
+                messageText.setVisibility(View.GONE);
+            }else{
+                messageText.setText(message.getMessage());
             }
 
 //            if (isFailedMessage) {
@@ -287,7 +303,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 nicknameText.setText(message.getUser().getName());
             }
 
-            messageText.setText(message.getMessage());
+            if(message.getMessage().equals("")){
+                messageText.setVisibility(View.GONE);
+            }else{
+                messageText.setText(message.getMessage());
+            }
+
             timeText.setText(DateUtils.formatTime(message.getCreatedAt()));
 
             if (message.getUpdatedAt().compareTo(message.getCreatedAt()) > 0) {
