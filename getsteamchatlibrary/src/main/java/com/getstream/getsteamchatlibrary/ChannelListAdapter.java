@@ -147,18 +147,26 @@ public class ChannelListAdapter extends BaseAdapter {
 
         String last_message_at = mChannelList.get(position).last_message_at;
 
+        Date date = null;
         if(last_message_at != null){
             try {
-
-                Date date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSX").parse(last_message_at);
-                String dateFormat = "mm:ss";
-                SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-                String tDate = sdf.format(date);
-                dateText.setText(tDate);
+                date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSX").parse(last_message_at);
 
             } catch (ParseException e) {
                 e.printStackTrace();
             }
+            if(date == null){
+                try {
+                    date = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSX").parse(last_message_at);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            String dateFormat = "mm:ss";
+            SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+            String tDate = sdf.format(date);
+            dateText.setText(tDate);
         }else{
             dateText.setVisibility(View.INVISIBLE);
             lastMessageText.setVisibility(View.INVISIBLE);

@@ -1,18 +1,33 @@
 package com.getstream.getsteamchatlibrary;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.dinuscxj.progressbar.CircleProgressBar;
 import com.getstream.getsteamchatlibrary.utils.DateUtils;
+import com.getstream.getsteamchatlibrary.utils.FileUtils;
 import com.getstream.getsteamchatlibrary.utils.ImageUtils;
+import com.getstream.getsteamchatlibrary.utils.MediaPlayerActivity;
+import com.getstream.getsteamchatlibrary.utils.PhotoViewerActivity;
 import com.getstream.getsteamchatlibrary.utils.UrlPreviewInfo;
 
 import org.json.JSONException;
@@ -26,10 +41,14 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private static final int VIEW_TYPE_USER_MESSAGE_ME = 10;
     private static final int VIEW_TYPE_USER_MESSAGE_OTHER = 11;
 
+    private static final int STATE_NORMAL = 0;
+    private static final int STATE_EDIT = 1;
+
+    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 13;
+
     private ArrayList<Message> mMessageList = new ArrayList<Message>();
     private Context mContext;
     private HashMap<Message, CircleProgressBar> mFileMessageMap;
-    private Channel mChannel;
 
 
     MessageListAdapter(Context context, ArrayList<Message> messageList) {
@@ -87,15 +106,18 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     }
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int position) {
 
         Message message = mMessageList.get(position);
         boolean isNewDay = false;
         boolean isContinuous = false;
 
 
-        if (position < mMessageList.size() - 1) {
-            Message prevMessage = mMessageList.get(position + 1);
+
+        if (position == 0) {
+            isNewDay = true;
+        } else if (position < mMessageList.size() - 1) {
+            Message prevMessage = mMessageList.get(position - 1);
 
             // If the date of the previous message is different, display the date before the message,
             // and also set isContinuous to false to show information such as the sender's nickname
@@ -107,8 +129,6 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             } else {
                 isContinuous = isContinuous(message, prevMessage);
             }
-        } else if (position == mMessageList.size() - 1) {
-            isNewDay = true;
         }
 
         switch (holder.getItemViewType()) {
@@ -117,10 +137,17 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 break;
             case VIEW_TYPE_USER_MESSAGE_OTHER:
                 ((OtherUserMessageHolder) holder).bind(mContext, (Message) message, isNewDay, isContinuous, position);
-//                ((MyUserMessageHolder) holder).bind(mContext, (Message) message, isContinuous, isNewDay, position);
                 break;
 
         }
+
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                showMessageOptionsDialog(mMessageList.get(position),position);
+                return false;
+            }
+        });
     }
 
     @Override
@@ -134,10 +161,12 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         ViewGroup urlPreviewContainer;
         TextView urlPreviewSiteNameText, urlPreviewTitleText, urlPreviewDescriptionText;
         ImageView urlPreviewMainImageView;
+
         View padding;
+
         NonScrollListView list_attachment;
         AttachmentListAdapter attachmentListAdapter;
-
+        CardView card_group_chat_message;
 
         MyUserMessageHolder(View itemView) {
             super(itemView);
@@ -157,7 +186,10 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             // Dynamic padding that can be hidden or shown based on whether the message is continuous.
             padding = itemView.findViewById(R.id.view_group_chat_padding);
 
+            card_group_chat_message = (CardView) itemView.findViewById(R.id.card_group_chat_message);
             list_attachment = (NonScrollListView) itemView.findViewById(R.id.list_attachment);
+
+
 
         }
 
@@ -165,8 +197,18 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             messageText.setText(message.getMessage());
             timeText.setText(DateUtils.formatTime(message.getCreatedAt()));
 
-            attachmentListAdapter = new AttachmentListAdapter(mContext,message.attachments,true);
+            attachmentListAdapter = new AttachmentListAdapter(mContext,message,message.attachments,true);
             list_attachment.setAdapter(attachmentListAdapter);
+
+            list_attachment.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                    onFileMessageClicked(message.attachments.get(i));
+
+                }
+            });
+
 
             if (message.getUpdatedAt().compareTo(message.getCreatedAt()) > 0) {
                 editedText.setVisibility(View.VISIBLE);
@@ -175,7 +217,9 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             }
 
             if(message.getMessage().equals("")){
-                messageText.setVisibility(View.GONE);
+                card_group_chat_message.setVisibility(View.GONE);
+                timeText.setVisibility(View.GONE);
+                readReceiptText.setVisibility(View.GONE);
             }else{
                 messageText.setText(message.getMessage());
             }
@@ -260,6 +304,10 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         TextView urlPreviewSiteNameText, urlPreviewTitleText, urlPreviewDescriptionText;
         ImageView urlPreviewMainImageView;
 
+        NonScrollListView list_attachment;
+        AttachmentListAdapter attachmentListAdapter;
+        CardView card_group_chat_message;
+
         public OtherUserMessageHolder(View itemView) {
             super(itemView);
 
@@ -276,11 +324,45 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             urlPreviewTitleText = (TextView) itemView.findViewById(R.id.text_url_preview_title);
             urlPreviewDescriptionText = (TextView) itemView.findViewById(R.id.text_url_preview_description);
             urlPreviewMainImageView = (ImageView) itemView.findViewById(R.id.image_url_preview_main);
+
+            card_group_chat_message = (CardView) itemView.findViewById(R.id.card_group_chat_message);
+            list_attachment = (NonScrollListView) itemView.findViewById(R.id.list_attachment);
+
+
         }
 
 
         void bind(Context context, final Message message,boolean isNewDay, boolean isContinuous, final int position) {
 
+
+            messageText.setText(message.getMessage());
+            timeText.setText(DateUtils.formatTime(message.getCreatedAt()));
+
+            attachmentListAdapter = new AttachmentListAdapter(mContext,message,message.attachments,false);
+            list_attachment.setAdapter(attachmentListAdapter);
+
+            list_attachment.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                    onFileMessageClicked(message.attachments.get(i));
+
+                }
+            });
+
+            if (message.getUpdatedAt().compareTo(message.getCreatedAt()) > 0) {
+                editedText.setVisibility(View.VISIBLE);
+            } else {
+                editedText.setVisibility(View.GONE);
+            }
+
+            if(message.getMessage().equals("")){
+                card_group_chat_message.setVisibility(View.GONE);
+                timeText.setVisibility(View.GONE);
+                readReceiptText.setVisibility(View.GONE);
+            }else{
+                messageText.setText(message.getMessage());
+            }
 
 
             // Show the date if the message was sent on a different date than the previous message.
@@ -304,7 +386,7 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             }
 
             if(message.getMessage().equals("")){
-                messageText.setVisibility(View.GONE);
+//                messageText.setVisibility(View.GONE);
             }else{
                 messageText.setText(message.getMessage());
             }
@@ -351,6 +433,68 @@ public class MessageListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 //                });
 //            }
         }
+    }
+
+
+    private void onFileMessageClicked(Attachment attachment) {
+        String type = attachment.getType().toLowerCase();
+        if (type.startsWith("image")) {
+            Intent i = new Intent(mContext, PhotoViewerActivity.class);
+            i.putExtra("url", attachment.getThumbnail());
+            i.putExtra("type", type);
+            mContext.startActivity(i);
+        } else if (type.startsWith("video")) {
+            Intent intent = new Intent(mContext, MediaPlayerActivity.class);
+            intent.putExtra("url", type);
+            mContext.startActivity(intent);
+        } else {
+        }
+    }
+    private void showMessageOptionsDialog(final Message message, final int position) {
+        String[] options = new String[] { "Edit message", "Delete message" };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0) {
+
+                    MessageListActivity.mCurrentState = STATE_EDIT;
+                    MessageListActivity.mMessageEditText.setText(message.text);
+                    MessageListActivity.mUploadFileButton.setVisibility(View.GONE);
+                    MessageListActivity.mMessageSendButton.setText("SAVE");
+                    MessageListActivity.mEditingMessage = message;
+
+                    String messageString = message.getMessage();
+                    if (messageString == null) {
+                        messageString = "";
+                    }
+                    MessageListActivity.mMessageEditText.setText(messageString);
+                    if (messageString.length() > 0) {
+                        MessageListActivity.mMessageEditText.setSelection(0, messageString.length());
+                    }
+
+                    MessageListActivity.mMessageEditText.requestFocus();
+                    MessageListActivity.mMessageEditText.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            MessageListActivity.mIMM.showSoftInput(MessageListActivity.mMessageEditText, 0);
+
+                            MessageListActivity.mRecyclerView.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MessageListActivity.mRecyclerView.scrollToPosition(position);
+                                }
+                            }, 500);
+                        }
+                    }, 100);
+
+                } else if (which == 1) {
+
+                }
+            }
+        });
+        builder.create().show();
     }
 
 }

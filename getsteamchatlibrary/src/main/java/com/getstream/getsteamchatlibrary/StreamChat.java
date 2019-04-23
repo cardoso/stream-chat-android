@@ -259,7 +259,7 @@ public class StreamChat {
 //            memArray.put(members.get(i).user.id);
 //        }
 
-        String queryChannels_url = baseURL + "/channels" + "?api_key=" +key + "&payload={\"filter_conditions\":{\"members\":{\"$in\":" + memArray.toString() + "}},\"sort\":[{\"field\":\"last_message_at\",\"direction\":-1}],\"state\":true,\"subscribe\":true,\"watch\":true}";
+        String queryChannels_url = baseURL + "/channels" + "?api_key=" +key + "&payload={\"filter_conditions\":{\"members\":{\"$in\":" + memArray.toString() + "}},\"sort\":[{\"field\":\"last_message_at\",\"direction\":-1}],\"state\":true,\"watch\":true}";
         get(queryChannels_url, new MyCallBackInterface() {
             @Override
             public void onSuccess(String result) {

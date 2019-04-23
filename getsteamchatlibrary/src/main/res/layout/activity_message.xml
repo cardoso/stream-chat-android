@@ -49,11 +49,6 @@
             android:layout_gravity="bottom" />
     </LinearLayout>
 
-    <View
-        android:layout_above="@id/layout_group_chat_chatbox"
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="#DfDfDf"/>
 
     <LinearLayout
         android:layout_above="@id/layout_group_chat_chatbox"
@@ -90,5 +85,9 @@
         </LinearLayout>
 
     </LinearLayout>
-
+    <View
+        android:layout_above="@id/layout_group_chat_chatbox"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="#DfDfDf"/>
 </RelativeLayout>

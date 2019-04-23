@@ -263,7 +263,7 @@ public class StableWSConnection extends WebSocketListener {
             // into onPostExecute() but that is upto you
 
             MessageListActivity.messageListAdapter.notifyDataSetChanged();
-//            MessageListActivity.mRecyclerView.smoothScrollToPosition(MessageListActivity.mChannel.messageLists.size()-1);
+            MessageListActivity.mRecyclerView.smoothScrollToPosition(MessageListActivity.mChannel.messageLists.size()-1);
         }
 
         @Override

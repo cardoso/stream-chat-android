@@ -107,10 +107,36 @@ public class Channel{
 
         String jsonData="";
         try {
-
             jsonData = new JSONObject().put("message", new JSONObject()
                     .put("text", message))
                     .toString();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        ChannelListsActivity.client.post(_channelURL() + "/message" + "?api_key=" + client.key,jsonData);
+
+    }
+    public void sendImageMessage(String message, ArrayList<String> uris){
+
+        String jsonData="";
+        try {
+
+            JSONArray attachmentArray = new JSONArray();
+            for (int i = 0; i < uris.size(); i ++ ){
+                JSONObject attachment = new JSONObject();
+                attachment.put("type","image");
+                attachment.put("asset_url",uris.get(i));
+                attachment.put("thumb_url",uris.get(i));
+                attachment.put("myCustomField",i);
+                attachmentArray.put(attachment);
+
+            }
+            jsonData = new JSONObject().put("message", new JSONObject()
+                    .put("text", message).put("attachments",attachmentArray))
+                    .toString();
+
 
 
         } catch (JSONException e) {
@@ -118,6 +144,22 @@ public class Channel{
         }
 
         ChannelListsActivity.client.post(_channelURL() + "/message" + "?api_key=" + client.key,jsonData);
+
+    }
+
+    public void updateMessage(String message,String messageID){
+
+        String jsonData="";
+        try {
+            jsonData = new JSONObject().put("message", new JSONObject()
+                    .put("text", message))
+                    .toString();
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        ChannelListsActivity.client.post(client.baseURL + "/messages/"+ messageID + "?api_key=" + client.key,jsonData);
 
     }
 
@@ -148,9 +190,6 @@ public class Channel{
         }
     }
 
-    public void create() {
-        this.query();
-    }
     void query(){
 
 

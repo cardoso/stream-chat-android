@@ -118,7 +118,8 @@ public class JSONParser {
                     attachment.type = attachmentObject.getJSONObject(i).getString("type");
                     attachment.thumb_url = attachmentObject.getJSONObject(i).getString("thumb_url");
                     attachment.asset_url = attachmentObject.getJSONObject(i).getString("asset_url");
-                    attachment.myCustomField = attachmentObject.getJSONObject(i).getInt("myCustomField");
+                    if(attachmentObject.getJSONObject(i).has("myCustomField"))
+                        attachment.myCustomField = attachmentObject.getJSONObject(i).getInt("myCustomField");
 
                     message.attachments.add(attachment);
                 }

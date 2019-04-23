@@ -1,12 +1,23 @@
 package com.getstream.getsteamchatlibrary;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.ClipData;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -14,6 +25,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
@@ -29,20 +41,25 @@ public class MessageListActivity extends AppCompatActivity{
     static RecyclerView mRecyclerView;
     public static MessageListAdapter messageListAdapter;
     private LinearLayoutManager mLayoutManager;
-    private EditText mMessageEditText;
-    private Button mMessageSendButton;
-    private ImageButton mUploadFileButton;
+    static EditText mMessageEditText;
+    static Button mMessageSendButton;
+    static ImageButton mUploadFileButton;
     private View mCurrentEventLayout;
     private TextView mCurrentEventText;
 
     private static final int STATE_NORMAL = 0;
     private static final int STATE_EDIT = 1;
-    private int mCurrentState = STATE_NORMAL;
+    static int mCurrentState = STATE_NORMAL;
 
-    private Message mEditingMessage = null;
-    private InputMethodManager mIMM;
+    static Message mEditingMessage = null;
+    static InputMethodManager mIMM;
 
     static Channel mChannel;
+
+
+    private static final int INTENT_REQUEST_CHOOSE_MEDIA = 301;
+    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 13;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,10 +124,14 @@ public class MessageListActivity extends AppCompatActivity{
                     String userInput = mMessageEditText.getText().toString();
                     if (userInput.length() > 0) {
                         if (mEditingMessage != null) {
-                            editMessage(mEditingMessage, userInput);
+                            mChannel.updateMessage(userInput,mEditingMessage.id);
                         }
                     }
-                    setState(STATE_NORMAL, null, -1);
+                    mUploadFileButton.setVisibility(View.VISIBLE);
+                    mMessageSendButton.setText("SEND");
+                    mMessageEditText.setText("");
+
+                    mCurrentState = STATE_NORMAL;
                 } else {
                     String newMessage = mMessageEditText.getText().toString();
                     if (newMessage.length() > 0) {
@@ -124,6 +145,13 @@ public class MessageListActivity extends AppCompatActivity{
             }
         });
 
+        mUploadFileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestMedia();
+            }
+        });
+
     }
 
     private void editMessage(final Message message, String editedMessage) {
@@ -132,152 +160,102 @@ public class MessageListActivity extends AppCompatActivity{
         }
 
     }
-    private void setState(int state, Message editingMessage, final int position) {
-        switch (state) {
-            case STATE_NORMAL:
-                mCurrentState = STATE_NORMAL;
-                mEditingMessage = null;
+    private void requestMedia() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            // If storage permissions are not granted, request permissions at run-time,
+            // as per < API 23 guidelines.
+            requestStoragePermissions();
+        } else {
+            Intent intent = new Intent();
 
-                mUploadFileButton.setVisibility(View.VISIBLE);
-                mMessageSendButton.setText("SEND");
-                mMessageEditText.setText("");
-                break;
+            // Pick images or videos
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                intent.setType("*/*");
+                String[] mimeTypes = {"image/*", "video/*"};
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+            } else {
+                intent.setType("image/* video/*");
+            }
 
-            case STATE_EDIT:
-                mCurrentState = STATE_EDIT;
-                mEditingMessage = editingMessage;
+            intent.setAction(Intent.ACTION_GET_CONTENT);
 
-                mUploadFileButton.setVisibility(View.GONE);
-                mMessageSendButton.setText("SAVE");
-                String messageString = ((Message)editingMessage).getMessage();
-                if (messageString == null) {
-                    messageString = "";
-                }
-                mMessageEditText.setText(messageString);
-                if (messageString.length() > 0) {
-                    mMessageEditText.setSelection(0, messageString.length());
-                }
+            // Always show the chooser (if there are multiple options available)
+            startActivityForResult(Intent.createChooser(intent, "Select Media"), INTENT_REQUEST_CHOOSE_MEDIA);
 
-                mMessageEditText.requestFocus();
-                mMessageEditText.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mIMM.showSoftInput(mMessageEditText, 0);
+            // Set this as false to maintain connection
+            // even when an external Activity is started.
 
-                        mRecyclerView.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mRecyclerView.scrollToPosition(position);
-                            }
-                        }, 500);
-                    }
-                }, 100);
-                break;
         }
     }
 
-        /*
-        // Message Input
+    private void requestStoragePermissions() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            // Provide an additional rationale to the user if the permission was not granted
+            // and the user would benefit from additional context for the use of the permission.
+            // For example if the user has previously denied the permission.
+            Snackbar.make(mRootLayout, "Storage access permissions are required to upload/download files.",
+                    Snackbar.LENGTH_LONG)
+                    .setAction("Okay", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                    PERMISSION_WRITE_EXTERNAL_STORAGE);
+                        }
+                    })
+                    .show();
+        } else {
+            // Permission has not been granted yet. Request it directly.
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PERMISSION_WRITE_EXTERNAL_STORAGE);
+        }
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
 
-        MessageInput messageInput = (MessageInput) findViewById(R.id.input);
-        messagesList = (MessagesList)findViewById(R.id.messagesList);
 
+        if (requestCode == INTENT_REQUEST_CHOOSE_MEDIA && resultCode == Activity.RESULT_OK) {
+            // If user has successfully chosen the image, show a dialog to confirm upload.
+            if (data == null) {
+                return;
+            }
+            ArrayList<String> mArrayUri = new ArrayList<String>();
+            if(data.getData()!=null) {
 
+                Uri mImageUri = data.getData();
+                mArrayUri.add(mImageUri.toString());
+            }else{
+                if (data.getClipData() != null) {
+                    ClipData mClipData = data.getClipData();
 
-        messageInput.setInputListener(new MessageInput.InputListener() {
-            @Override
-            public boolean onSubmit(CharSequence input) {
-                //validate and send message
-                String message = input.toString();
-                if (message.length() > 0){
-                    channel.sendMessage(message);
+                    for (int i = 0; i < mClipData.getItemCount(); i++) {
+
+                        ClipData.Item item = mClipData.getItemAt(i);
+                        Uri uri = item.getUri();
+                        mArrayUri.add(uri.toString());
+                    }
                 }
-                return true;
-            }
-        });
-
-        messageInput.setAttachmentsListener(new MessageInput.AttachmentsListener() {
-            @Override
-            public void onAddAttachments() {
-                //select attachments
-            }
-        });
-
-        messageInput.setTypingListener(new MessageInput.TypingListener() {
-            @Override
-            public void onStartTyping() {
-
             }
 
-            @Override
-            public void onStopTyping() {
-
-            }
-        });
+//            Toast.makeText(this, data.getType(), Toast.LENGTH_SHORT).show();
 
 
-        initAdapter();
-
-    }
-    private void initAdapter() {
-
-        ImageLoader imageLoader = new ImageLoader() {
-            @Override
-            public void loadImage(ImageView imageView, @Nullable String url, @Nullable Object payload) {
-                Picasso.with(MessageListActivity.this).load(url).into(imageView);
-            }
-        };
-
-        //We can pass any data to ViewHolder with payload
-        CustomIncomingTextMessageViewHolder.Payload payload = new CustomIncomingTextMessageViewHolder.Payload();
-        //For example click listener
-        payload.avatarClickListener = new CustomIncomingTextMessageViewHolder.OnAvatarClickListener() {
-            @Override
-            public void onAvatarClick() {
-                Toast.makeText(MessageListActivity.this,
-                        "Text message avatar clicked", Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        MessageHolders holdersConfig = new MessageHolders()
-                .setIncomingTextConfig(
-                        CustomIncomingTextMessageViewHolder.class,
-                        R.layout.item_custom_incoming_text_message,
-                        payload)
-                .setOutcomingTextConfig(
-                        CustomOutcomingTextMessageViewHolder.class,
-                        R.layout.item_custom_outcoming_text_message)
-                .setIncomingImageConfig(
-                        CustomIncomingImageMessageViewHolder.class,
-                        R.layout.item_custom_incoming_image_message)
-                .setOutcomingImageConfig(
-                        CustomOutcomingImageMessageViewHolder.class,
-                        R.layout.item_custom_outcoming_image_message);
-
-        messagesAdapter = new MessagesListAdapter<Message>(ChannelListsActivity.me.id, holdersConfig, imageLoader);
-//        messagesAdapter.setOnMessageLongClickListener(this);
-        messagesAdapter.setLoadMoreListener(this);
-        messagesList.setAdapter(messagesAdapter);
-        if(channel.messageLists.size() > 0)
-            messagesAdapter.addToEnd(channel.messageLists,true);
-    }
-
-
-    @Override
-    public void onLoadMore(int page, int totalItemsCount) {
-
+            mChannel.sendImageMessage("",mArrayUri);
+        }
     }
 
     @Override
-    public void onSelectionChanged(int count) {
+    public void onBackPressed() {
+        super.onBackPressed();
 
+        if (mCurrentState == STATE_EDIT) {
+            mCurrentState = STATE_NORMAL;
+        }
+
+        mIMM.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
     }
-
-    @Override
-    public void onMessageLongClick(Message message) {
-
-    }
-
-    */
 }

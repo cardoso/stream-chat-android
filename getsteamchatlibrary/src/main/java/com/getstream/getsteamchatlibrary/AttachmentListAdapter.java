@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.dinuscxj.progressbar.CircleProgressBar;
+import com.getstream.getsteamchatlibrary.utils.DateUtils;
 import com.getstream.getsteamchatlibrary.utils.ImageUtils;
 import com.teleclinic.bulent.smartimageview.SmartImageViewLayout;
 
@@ -21,8 +22,10 @@ public class AttachmentListAdapter extends BaseAdapter {
     ArrayList<Attachment> mAttachments;
     static LayoutInflater inflater = null;
     boolean isSent;
+    Message mMessage;
 
-    AttachmentListAdapter(Context context, ArrayList<Attachment> mAttachments, boolean isSent){
+    AttachmentListAdapter(Context context,Message mMessage, ArrayList<Attachment> mAttachments, boolean isSent){
+        this.mMessage = mMessage;
         this.mAttachments = mAttachments;
         this.context = context;
         this.isSent = isSent;
@@ -59,7 +62,7 @@ public class AttachmentListAdapter extends BaseAdapter {
 
             }
 
-
+        TextView timeText;
         ImageView fileThumbnailImage;
         CircleProgressBar circleProgressBar;
 
@@ -67,6 +70,10 @@ public class AttachmentListAdapter extends BaseAdapter {
         circleProgressBar = (CircleProgressBar) itemView.findViewById(R.id.circle_progress);
 
         // If thumbnails exist, get smallest (first) thumbnail and display it in the message
+
+        timeText = (TextView) itemView.findViewById(R.id.text_group_chat_time);
+        timeText.setText(DateUtils.formatTime(mMessage.getCreatedAt()));
+
 
 
         if (attachment.getType().toLowerCase().contains("gif")) {

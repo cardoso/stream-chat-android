@@ -2,47 +2,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="wrap_content"
-    android:layout_width="match_parent"
-    android:paddingLeft="8dp"
-    android:paddingRight="8dp">
+    android:layout_width="match_parent">
 
-    <TextView
-        android:id="@+id/text_group_chat_date"
-        android:text="February 22"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:textColor="@color/groupChatDateText"
-        android:background="@drawable/group_chat_date_background"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="0dp"
-        android:gravity="center"
-        android:textSize="14sp" />
-
-    <ImageView
-        android:id="@+id/image_group_chat_profile"
-        android:src="@drawable/profile_placeholder"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@id/text_group_chat_date"
-        android:layout_alignWithParentIfMissing="true"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"/>
-
-    <TextView
-        android:text="Daniel Silberschatz"
-        android:id="@+id/text_group_chat_nickname"
-        android:textSize="16sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/image_group_chat_profile"
-        android:layout_alignTop="@id/image_group_chat_profile"/>
 
     <android.support.v7.widget.CardView
         android:id="@+id/card_group_chat_message"
