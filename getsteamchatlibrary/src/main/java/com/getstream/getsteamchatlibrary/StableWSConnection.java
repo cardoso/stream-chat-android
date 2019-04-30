@@ -55,8 +55,7 @@ public class StableWSConnection extends WebSocketListener {
 
             lastEvent = new Date();
 
-            isConnecting = false;
-            consecutiveFailures = 0;
+            isConnecting = false;consecutiveFailures = 0;
             _startMonitor();
             _startHealthCheck();
             //

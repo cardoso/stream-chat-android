@@ -20,6 +20,7 @@ import okhttp3.Response;
 
 import static com.getstream.getsteamchatlibrary.Signing.JWTUserToken;
 import static com.getstream.getsteamchatlibrary.Signing.UserFromToken;
+import static com.getstream.getsteamchatlibrary.Signing.encodeBase64;
 
 public class StreamChat {
 
@@ -128,7 +129,6 @@ public class StreamChat {
         this.clientID = this.user.id + "--" + this.UUID_;
         this.connect();
     }
-
     void connect() {
         this.connecting = true;
         this.failures = 0;
@@ -148,7 +148,7 @@ public class StreamChat {
 
         String strqs = "{" + client_id +"," + user_id +"," + user_details +"," + user_token +"}";
         String qs = URLEncoder.encode(strqs);
-		if(qs.length() > 1900)
+        if(qs.length() > 1900)
             return;
 
         String token = "";
@@ -166,6 +166,49 @@ public class StreamChat {
         wsConnection.connect();
 
     }
+
+//    void connect() {
+//        this.connecting = true;
+//        this.failures = 0;
+//
+////        if(client.userID == null){
+////            return;
+////        }
+//
+//
+////add items
+//
+////        String client_id = "\"client_id\":\""+ this.clientID + "\"";
+//        String user_id = "\"user_id\":\""+ this.userID + "\"";
+//        String userString = "\"" +"id\":\"" + this.userID + "\"" + ",\"name\":" + "\"" + this.user.name + "\"" + ",\"image\":" + "\"" + this.user.image + "\"";
+//        String user_details = "\"user_details\":{" + userString + "}";
+//        String user_token = "\"user_token\":\"" + this.userToken + "\"";
+//        String server_determines_connection_id = "\"server_determines_connection_id\":\"true\"";
+//
+//        String strqs = "{"+ server_determines_connection_id + "," + user_id +"," + user_details + "}";
+//        String qs = URLEncoder.encode(strqs);
+//		if(qs.length() > 1900)
+//            return;
+//
+//        String token = "";
+//        if(this.anonymous == false){
+//            token = this.userToken != null ? this.userToken : JWTUserToken("",user.id,"","");
+//        }
+//
+//        String authType = this.getAuthType();
+//
+//        this.wsURL = this.wsBaseURL + "/connect?json=" + qs + "&api_key="
+//                + this.key + "&authorization=" + token + "&stream-auth-type=" + authType;
+//
+////        this.wsURL = this.wsBaseURL + "/connect?json=" + qs + "&api_key="
+////                + this.key + "&stream-auth-type=" + authType;
+//
+//        wsConnection = new StableWSConnection(wsURL, clientID, user.id/*, this.recoverState, this.handleEvent, this.dispatchEvent*/);
+//
+//        wsConnection.connect();
+//
+//    }
+
 
     String getAuthType() {
         return this.anonymous ? "anonymous" : "jwt";
@@ -259,7 +302,7 @@ public class StreamChat {
 //            memArray.put(members.get(i).user.id);
 //        }
 
-        String queryChannels_url = baseURL + "/channels" + "?api_key=" +key + "&payload={\"filter_conditions\":{\"members\":{\"$in\":" + memArray.toString() + "}},\"sort\":[{\"field\":\"last_message_at\",\"direction\":-1}],\"state\":true,\"watch\":true}";
+        String queryChannels_url = baseURL + "/channels" + "?api_key=" +key + "&payload={\"filter_conditions\":{\"members\":{\"$in\":" + memArray.toString() + "}},\"sort\":[{\"field\":\"last_message_at\",\"direction\":-1}],\"state\":true,\"watch\":true}"  + "&client_id=" + clientID;
         get(queryChannels_url, new MyCallBackInterface() {
             @Override
             public void onSuccess(String result) {

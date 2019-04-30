@@ -189,7 +189,7 @@ public class Channel{
             }
         }
     }
-
+/*
     void query(){
 
 
@@ -218,7 +218,7 @@ public class Channel{
             }
         });
     }
-
+*/
     public void watch(){
 
         String jsonData="";
