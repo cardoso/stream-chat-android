@@ -39,7 +39,7 @@ import com.getstream.sdk.chat.rest.interfaces.QueryChannelCallback;
 import com.getstream.sdk.chat.rest.interfaces.QueryChannelListCallback;
 import com.getstream.sdk.chat.rest.response.DevicesResponse;
 import com.getstream.sdk.chat.rest.response.ChannelResponse;
-import com.getstream.sdk.chat.rest.response.FlagUserResponse;
+import com.getstream.sdk.chat.rest.response.FlagResponse;
 import com.getstream.sdk.chat.rest.response.QueryChannelsResponse;
 import com.getstream.sdk.chat.utils.Constant;
 import com.getstream.sdk.chat.utils.Global;
@@ -427,9 +427,10 @@ public class ChannelListFragment extends Fragment implements ChannelListEventHan
     public void handleConnection() {
         setAfterFirstConnection();
         binding.setNoConnection(false);
-        client.unFlagUser("testuser7", new FlagUserCallback() {
+        String targetId = "4c82d90a-1ff0-44e0-a1de-674471829964";
+        client.flagMessage(targetId, new FlagUserCallback() {
             @Override
-            public void onSuccess(FlagUserResponse response) {
+            public void onSuccess(FlagResponse response) {
                 Log.d(TAG, response.toString());
             }
 

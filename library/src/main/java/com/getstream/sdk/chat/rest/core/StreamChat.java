@@ -32,7 +32,6 @@ import com.getstream.sdk.chat.rest.interfaces.QueryChannelListCallback;
 import com.getstream.sdk.chat.rest.interfaces.SendFileCallback;
 import com.getstream.sdk.chat.rest.interfaces.MessageCallback;
 import com.getstream.sdk.chat.rest.request.AddDeviceRequest;
-import com.getstream.sdk.chat.rest.request.MuteUserRequest;
 import com.getstream.sdk.chat.rest.request.QueryChannelRequest;
 import com.getstream.sdk.chat.rest.request.MarkReadRequest;
 import com.getstream.sdk.chat.rest.request.PaginationRequest;
@@ -45,7 +44,7 @@ import com.getstream.sdk.chat.rest.response.DevicesResponse;
 import com.getstream.sdk.chat.rest.response.ChannelResponse;
 import com.getstream.sdk.chat.rest.response.EventResponse;
 import com.getstream.sdk.chat.rest.response.FileSendResponse;
-import com.getstream.sdk.chat.rest.response.FlagUserResponse;
+import com.getstream.sdk.chat.rest.response.FlagResponse;
 import com.getstream.sdk.chat.rest.response.MuteUserResponse;
 import com.getstream.sdk.chat.rest.response.QueryChannelsResponse;
 import com.getstream.sdk.chat.rest.response.GetDevicesResponse;
@@ -1095,6 +1094,7 @@ public class StreamChat implements WSResponseHandler {
     // endregion
 
     public void disconnect() {
+
     }
 
     public void setAnonymousUser() {
@@ -1119,14 +1119,17 @@ public class StreamChat implements WSResponseHandler {
     /** muteUser - mutes a user
      *
      * @param target_id
-     * @param [userID] Only used with serverside auth
-     * @returns {Promise<*>}
+     * Only used with serverside auth
+     * @returns Server response
      */
     public void muteUser(@NonNull String target_id,
                          MuteUserCallback callback) {
 
-        MuteUserRequest request = new MuteUserRequest(target_id);
-        mService.muteUser(apiKey, user.getId(), connectionId, request).enqueue(new Callback<MuteUserResponse>() {
+        Map<String, String> body = new HashMap<>();
+        body.put("target_id",target_id);
+        body.put("user_id",user.getId());
+
+        mService.muteUser(apiKey, user.getId(), connectionId, body).enqueue(new Callback<MuteUserResponse>() {
             @Override
             public void onResponse(Call<MuteUserResponse> call, Response<MuteUserResponse> response) {
                 if (response.isSuccessful()) {
@@ -1146,14 +1149,17 @@ public class StreamChat implements WSResponseHandler {
     /** unmuteUser - unmutes a user
      *
      * @param target_id
-     * @param [userID] Only used with serverside auth
-     * @returns {Promise<*>}
+     * Only used with serverside auth
+     * @returns Server response
      */
     public void unmuteUser(@NonNull String target_id,
                            MuteUserCallback callback) {
 
-        MuteUserRequest request = new MuteUserRequest(target_id);
-        mService.unMuteUser(apiKey, user.getId(), connectionId, request).enqueue(new Callback<MuteUserResponse>() {
+        Map<String, String> body = new HashMap<>();
+        body.put("target_id",target_id);
+        body.put("user_id",user.getId());
+
+        mService.unMuteUser(apiKey, user.getId(), connectionId, body).enqueue(new Callback<MuteUserResponse>() {
             @Override
             public void onResponse(Call<MuteUserResponse> call, Response<MuteUserResponse> response) {
                 if (response.isSuccessful()) {
@@ -1170,11 +1176,7 @@ public class StreamChat implements WSResponseHandler {
         });
     }
 
-//    public void flagMessage(String messageID) {
-//        return await this.post(this.baseURL + '/moderation/flag', {
-//                target_message_id: messageID,
-//		});
-//    }
+
 
     public void flagUser(@NonNull String targetUserId,
                          FlagUserCallback callback) {
@@ -1182,9 +1184,9 @@ public class StreamChat implements WSResponseHandler {
         Map<String, String> body = new HashMap<>();
         body.put("target_user_id",targetUserId);
 
-        mService.flagUser(apiKey, user.getId(), connectionId, body).enqueue(new Callback<FlagUserResponse>() {
+        mService.flag(apiKey, user.getId(), connectionId, body).enqueue(new Callback<FlagResponse>() {
             @Override
-            public void onResponse(Call<FlagUserResponse> call, Response<FlagUserResponse> response) {
+            public void onResponse(Call<FlagResponse> call, Response<FlagResponse> response) {
                 if (response.isSuccessful()) {
                     callback.onSuccess(response.body());
                 } else {
@@ -1193,7 +1195,7 @@ public class StreamChat implements WSResponseHandler {
             }
 
             @Override
-            public void onFailure(Call<FlagUserResponse> call, Throwable t) {
+            public void onFailure(Call<FlagResponse> call, Throwable t) {
                 callback.onError(t.getLocalizedMessage(), -1);
             }
         });
@@ -1205,9 +1207,9 @@ public class StreamChat implements WSResponseHandler {
         Map<String, String> body = new HashMap<>();
         body.put("target_user_id",targetUserId);
 
-        mService.unFlagUser(apiKey, user.getId(), connectionId, body).enqueue(new Callback<FlagUserResponse>() {
+        mService.unFlag(apiKey, user.getId(), connectionId, body).enqueue(new Callback<FlagResponse>() {
             @Override
-            public void onResponse(Call<FlagUserResponse> call, Response<FlagUserResponse> response) {
+            public void onResponse(Call<FlagResponse> call, Response<FlagResponse> response) {
                 if (response.isSuccessful()) {
                     callback.onSuccess(response.body());
                 } else {
@@ -1216,27 +1218,55 @@ public class StreamChat implements WSResponseHandler {
             }
 
             @Override
-            public void onFailure(Call<FlagUserResponse> call, Throwable t) {
+            public void onFailure(Call<FlagResponse> call, Throwable t) {
                 callback.onError(t.getLocalizedMessage(), -1);
             }
         });
     }
 
-//    public void unflagMessage(String messageID) {
-//        return await this.post(this.baseURL + '/moderation/unflag', {
-//                target_message_id: messageID,
-//		});
-//    }
-//
-//    public void unflagUser(String userID) {
-//        return await this.post(this.baseURL + '/moderation/unflag', {
-//                target_user_id: userID,
-//		});
-//    }
+    public void flagMessage(@NonNull String targetMessageId,
+                         FlagUserCallback callback) {
 
-    public void flagMessage() {
+        Map<String, String> body = new HashMap<>();
+        body.put("target_message_id",targetMessageId);
+
+        mService.flag(apiKey, user.getId(), connectionId, body).enqueue(new Callback<FlagResponse>() {
+            @Override
+            public void onResponse(Call<FlagResponse> call, Response<FlagResponse> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError(response.message(), response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FlagResponse> call, Throwable t) {
+                callback.onError(t.getLocalizedMessage(), -1);
+            }
+        });
     }
 
-    public void unflagMessage() {
+    public void nuFlagMessage(@NonNull String targetMessageId,
+                            FlagUserCallback callback) {
+
+        Map<String, String> body = new HashMap<>();
+        body.put("target_message_id",targetMessageId);
+
+        mService.unFlag(apiKey, user.getId(), connectionId, body).enqueue(new Callback<FlagResponse>() {
+            @Override
+            public void onResponse(Call<FlagResponse> call, Response<FlagResponse> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError(response.message(), response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FlagResponse> call, Throwable t) {
+                callback.onError(t.getLocalizedMessage(), -1);
+            }
+        });
     }
 }

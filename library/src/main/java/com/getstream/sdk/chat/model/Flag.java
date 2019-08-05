@@ -10,6 +10,9 @@ public class Flag {
     @SerializedName("target_user")
     User target_user;
 
+    @SerializedName("target_message_id")
+    String target_message_id;
+
     @SerializedName("created_at")
     String created_at;
 
