@@ -1,6 +1,7 @@
 package com.getstream.sdk.chat.rest.controller;
 
 import com.getstream.sdk.chat.rest.request.AddDeviceRequest;
+import com.getstream.sdk.chat.rest.request.MuteUserRequest;
 import com.getstream.sdk.chat.rest.request.QueryChannelRequest;
 import com.getstream.sdk.chat.rest.request.MarkReadRequest;
 import com.getstream.sdk.chat.rest.request.PaginationRequest;
@@ -13,6 +14,7 @@ import com.getstream.sdk.chat.rest.response.DevicesResponse;
 import com.getstream.sdk.chat.rest.response.ChannelResponse;
 import com.getstream.sdk.chat.rest.response.EventResponse;
 import com.getstream.sdk.chat.rest.response.FileSendResponse;
+import com.getstream.sdk.chat.rest.response.MuteUserResponse;
 import com.getstream.sdk.chat.rest.response.QueryChannelsResponse;
 import com.getstream.sdk.chat.rest.response.GetDevicesResponse;
 import com.getstream.sdk.chat.rest.response.GetRepliesResponse;
@@ -68,6 +70,12 @@ public interface APIService {
 
     @POST("/channels/messaging/{id}")
     Call<ChannelResponse> addMembers(@Path("id") String channelId, @Query("api_key") String apiKey, @Query("user_id") String userId, @Query("client_id") String connectionId, @Body JSONObject body);
+
+    @POST("/moderation/mute")
+    Call<MuteUserResponse> muteUser(@Query("api_key") String apiKey, @Query("user_id") String userId, @Query("client_id") String connectionId, @Body MuteUserRequest request);
+
+    @POST("/moderation/unmute")
+    Call<MuteUserResponse> unMuteUser(@Query("api_key") String apiKey, @Query("user_id") String userId, @Query("client_id") String connectionId, @Body MuteUserRequest request);
     // endregion
 
     // region Message

@@ -24,12 +24,14 @@ import com.getstream.sdk.chat.rest.interfaces.DeviceCallback;
 import com.getstream.sdk.chat.rest.interfaces.EventCallback;
 import com.getstream.sdk.chat.rest.interfaces.GetDevicesCallback;
 import com.getstream.sdk.chat.rest.interfaces.GetRepliesCallback;
+import com.getstream.sdk.chat.rest.interfaces.MuteUserCallback;
 import com.getstream.sdk.chat.rest.interfaces.QueryUserListCallback;
 import com.getstream.sdk.chat.rest.interfaces.QueryChannelCallback;
 import com.getstream.sdk.chat.rest.interfaces.QueryChannelListCallback;
 import com.getstream.sdk.chat.rest.interfaces.SendFileCallback;
 import com.getstream.sdk.chat.rest.interfaces.MessageCallback;
 import com.getstream.sdk.chat.rest.request.AddDeviceRequest;
+import com.getstream.sdk.chat.rest.request.MuteUserRequest;
 import com.getstream.sdk.chat.rest.request.QueryChannelRequest;
 import com.getstream.sdk.chat.rest.request.MarkReadRequest;
 import com.getstream.sdk.chat.rest.request.PaginationRequest;
@@ -42,6 +44,7 @@ import com.getstream.sdk.chat.rest.response.DevicesResponse;
 import com.getstream.sdk.chat.rest.response.ChannelResponse;
 import com.getstream.sdk.chat.rest.response.EventResponse;
 import com.getstream.sdk.chat.rest.response.FileSendResponse;
+import com.getstream.sdk.chat.rest.response.MuteUserResponse;
 import com.getstream.sdk.chat.rest.response.QueryChannelsResponse;
 import com.getstream.sdk.chat.rest.response.GetDevicesResponse;
 import com.getstream.sdk.chat.rest.response.GetRepliesResponse;
@@ -211,7 +214,7 @@ public class StreamChat implements WSResponseHandler {
     }
     // endregion
 
-    // region handle
+    // region Event handler
     @Override
     public void handleEventWSResponse(Event event) {
         if (TextUtils.isEmpty(connectionId)) {
@@ -1111,11 +1114,58 @@ public class StreamChat implements WSResponseHandler {
 
     }
 
+    /** muteUser - mutes a user
+     *
+     * @param target_id
+     * @param [userID] Only used with serverside auth
+     * @returns {Promise<*>}
+     */
+    public void muteUser(@NonNull String target_id,
+                         MuteUserCallback callback) {
 
-    public void muteUser() {
+        MuteUserRequest request = new MuteUserRequest(target_id);
+        mService.muteUser(apiKey, user.getId(), connectionId, request).enqueue(new Callback<MuteUserResponse>() {
+            @Override
+            public void onResponse(Call<MuteUserResponse> call, Response<MuteUserResponse> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError(response.message(), response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MuteUserResponse> call, Throwable t) {
+                callback.onError(t.getLocalizedMessage(), -1);
+            }
+        });
     }
 
-    public void unmuteUser() {
+    /** unmuteUser - unmutes a user
+     *
+     * @param target_id
+     * @param [userID] Only used with serverside auth
+     * @returns {Promise<*>}
+     */
+    public void unmuteUser(@NonNull String target_id,
+                           MuteUserCallback callback) {
+
+        MuteUserRequest request = new MuteUserRequest(target_id);
+        mService.unMuteUser(apiKey, user.getId(), connectionId, request).enqueue(new Callback<MuteUserResponse>() {
+            @Override
+            public void onResponse(Call<MuteUserResponse> call, Response<MuteUserResponse> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError(response.message(), response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MuteUserResponse> call, Throwable t) {
+                callback.onError(t.getLocalizedMessage(), -1);
+            }
+        });
     }
 
     public void flagMessage() {

@@ -97,6 +97,7 @@ public class UsersActivity extends AppCompatActivity {
 
     // region Init
     private void init() {
+        if (client == null) client = Global.client;
         configChannelListView();
         getUsers();
     }

@@ -40,14 +40,18 @@ import static com.getstream.sdk.chat.enums.Filters.or;
 
 public class MainActivity extends AppCompatActivity {
 
-    final String API_KEY = "qk4nn7rpcn75";
+    final String API_KEY = "cranwty2xrfm";
 
-    final String USER_NAME = "Broken waterfall";
-    final String USER_ID = "broken-waterfall-5";
-    final String USER_IMAGE = "https://bit.ly/2u9Vc0r";
+//    final String USER_NAME = "Broken waterfall";
+//    final String USER_ID = "broken-waterfall-5";
     final String USER_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiYnJva2VuLXdhdGVyZmFsbC01In0.d1xKTlD_D0G-VsBoDBNbaLjO-2XWNA8rlTm4ru4sMHg";
 
-    boolean isSingleConversation = true;
+    final String USER_ID = "testuser7";
+    final String USER_NAME = "Test User7";
+    final String USER_IMAGE = "https://bit.ly/2u9Vc0r";
+
+
+    boolean isSingleConversation = false;
 
     // region LifeCycle
     @Override
@@ -65,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         User user = new User(USER_ID, extraData);
 
         try {
-            setStreamChatUser(client, user, Token.HARDCODED);
+            setStreamChatUser(client, user, Token.DEVELOPMENT);
 
             if (isSingleConversation)
                 singleConversation(client);

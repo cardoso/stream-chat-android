@@ -1,10 +1,13 @@
 package com.getstream.sdk.chat.rest;
 
+import com.getstream.sdk.chat.model.Device;
+import com.getstream.sdk.chat.model.Mute;
 import com.getstream.sdk.chat.utils.Global;
 import com.getstream.sdk.chat.utils.StringUtility;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * A user
@@ -12,30 +15,80 @@ import java.util.HashMap;
 
 public class User {
     @SerializedName("id")
-    private String id;
+    String id;
 
     @SerializedName("name")
-    private String name;
+    String name;
 
     @SerializedName("image")
-    private String image;
+    String image;
 
     @SerializedName("role")
-    private String role;
+    String role;
 
     @SerializedName("created_at")
-    private String created_at;
+    String created_at;
 
     @SerializedName("updated_at")
-    private String updated_at;
+    String updated_at;
 
     @SerializedName("last_active")
-    private String last_active;
+    String last_active;
 
     @SerializedName("online")
-    private Boolean online;
+    Boolean online;
 
-    private HashMap<String, Object> extraData;
+    @SerializedName("invisible")
+    Boolean invisible;
+
+    @SerializedName("devices")
+    List<Device> devices;
+
+    @SerializedName("mutes")
+    List<Mute> mutes;
+
+    @SerializedName("unread_count")
+    int unread_count;
+
+    @SerializedName("total_unread_count")
+    int total_unread_count;
+
+    @SerializedName("unread_channels")
+    int unread_channels;
+
+    HashMap<String, Object> extraData;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 
     public String getCreated_at() {
         return created_at;
@@ -61,31 +114,6 @@ public class User {
         this.last_active = last_active;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
     public Boolean getOnline() {
         return online;
     }
@@ -94,12 +122,52 @@ public class User {
         this.online = online;
     }
 
-    public String getName() {
-        return name;
+    public Boolean getInvisible() {
+        return invisible;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setInvisible(Boolean invisible) {
+        this.invisible = invisible;
+    }
+
+    public List<Device> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<Device> devices) {
+        this.devices = devices;
+    }
+
+    public List<Mute> getMutes() {
+        return mutes;
+    }
+
+    public void setMutes(List<Mute> mutes) {
+        this.mutes = mutes;
+    }
+
+    public int getUnread_count() {
+        return unread_count;
+    }
+
+    public void setUnread_count(int unread_count) {
+        this.unread_count = unread_count;
+    }
+
+    public int getTotal_unread_count() {
+        return total_unread_count;
+    }
+
+    public void setTotal_unread_count(int total_unread_count) {
+        this.total_unread_count = total_unread_count;
+    }
+
+    public int getUnread_channels() {
+        return unread_channels;
+    }
+
+    public void setUnread_channels(int unread_channels) {
+        this.unread_channels = unread_channels;
     }
 
     /**
