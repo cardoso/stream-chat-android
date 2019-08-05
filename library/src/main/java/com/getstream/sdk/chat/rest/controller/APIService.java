@@ -14,6 +14,7 @@ import com.getstream.sdk.chat.rest.response.DevicesResponse;
 import com.getstream.sdk.chat.rest.response.ChannelResponse;
 import com.getstream.sdk.chat.rest.response.EventResponse;
 import com.getstream.sdk.chat.rest.response.FileSendResponse;
+import com.getstream.sdk.chat.rest.response.FlagUserResponse;
 import com.getstream.sdk.chat.rest.response.MuteUserResponse;
 import com.getstream.sdk.chat.rest.response.QueryChannelsResponse;
 import com.getstream.sdk.chat.rest.response.GetDevicesResponse;
@@ -76,6 +77,12 @@ public interface APIService {
 
     @POST("/moderation/unmute")
     Call<MuteUserResponse> unMuteUser(@Query("api_key") String apiKey, @Query("user_id") String userId, @Query("client_id") String connectionId, @Body MuteUserRequest request);
+
+    @POST("/moderation/flag")
+    Call<FlagUserResponse> flagUser(@Query("api_key") String apiKey, @Query("user_id") String userId, @Query("client_id") String connectionId, @Body Map<String, String> body);
+
+    @POST("/moderation/unflag")
+    Call<FlagUserResponse> unFlagUser(@Query("api_key") String apiKey, @Query("user_id") String userId, @Query("client_id") String connectionId, @Body Map<String, String> body);
     // endregion
 
     // region Message

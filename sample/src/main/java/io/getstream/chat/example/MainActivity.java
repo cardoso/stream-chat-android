@@ -46,8 +46,8 @@ public class MainActivity extends AppCompatActivity {
 //    final String USER_ID = "broken-waterfall-5";
     final String USER_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiYnJva2VuLXdhdGVyZmFsbC01In0.d1xKTlD_D0G-VsBoDBNbaLjO-2XWNA8rlTm4ru4sMHg";
 
-    final String USER_ID = "testuser7";
-    final String USER_NAME = "Test User7";
+    final String USER_ID = "testuser1";
+    final String USER_NAME = "Test User1";
     final String USER_IMAGE = "https://bit.ly/2u9Vc0r";
 
 

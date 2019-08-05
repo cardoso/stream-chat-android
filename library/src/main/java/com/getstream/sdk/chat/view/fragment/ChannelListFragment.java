@@ -34,10 +34,12 @@ import com.getstream.sdk.chat.databinding.FragmentChannelListBinding;
 import com.getstream.sdk.chat.interfaces.ChannelListEventHandler;
 import com.getstream.sdk.chat.rest.core.StreamChat;
 import com.getstream.sdk.chat.rest.interfaces.DeviceCallback;
+import com.getstream.sdk.chat.rest.interfaces.FlagUserCallback;
 import com.getstream.sdk.chat.rest.interfaces.QueryChannelCallback;
 import com.getstream.sdk.chat.rest.interfaces.QueryChannelListCallback;
 import com.getstream.sdk.chat.rest.response.DevicesResponse;
 import com.getstream.sdk.chat.rest.response.ChannelResponse;
+import com.getstream.sdk.chat.rest.response.FlagUserResponse;
 import com.getstream.sdk.chat.rest.response.QueryChannelsResponse;
 import com.getstream.sdk.chat.utils.Constant;
 import com.getstream.sdk.chat.utils.Global;
@@ -425,6 +427,17 @@ public class ChannelListFragment extends Fragment implements ChannelListEventHan
     public void handleConnection() {
         setAfterFirstConnection();
         binding.setNoConnection(false);
+        client.unFlagUser("testuser7", new FlagUserCallback() {
+            @Override
+            public void onSuccess(FlagUserResponse response) {
+                Log.d(TAG, response.toString());
+            }
+
+            @Override
+            public void onError(String errMsg, int errCode) {
+                Log.d(TAG, errMsg);
+            }
+        });
     }
 
     /**

@@ -22,6 +22,7 @@ import com.getstream.sdk.chat.rest.controller.APIService;
 import com.getstream.sdk.chat.rest.controller.RetrofitClient;
 import com.getstream.sdk.chat.rest.interfaces.DeviceCallback;
 import com.getstream.sdk.chat.rest.interfaces.EventCallback;
+import com.getstream.sdk.chat.rest.interfaces.FlagUserCallback;
 import com.getstream.sdk.chat.rest.interfaces.GetDevicesCallback;
 import com.getstream.sdk.chat.rest.interfaces.GetRepliesCallback;
 import com.getstream.sdk.chat.rest.interfaces.MuteUserCallback;
@@ -44,6 +45,7 @@ import com.getstream.sdk.chat.rest.response.DevicesResponse;
 import com.getstream.sdk.chat.rest.response.ChannelResponse;
 import com.getstream.sdk.chat.rest.response.EventResponse;
 import com.getstream.sdk.chat.rest.response.FileSendResponse;
+import com.getstream.sdk.chat.rest.response.FlagUserResponse;
 import com.getstream.sdk.chat.rest.response.MuteUserResponse;
 import com.getstream.sdk.chat.rest.response.QueryChannelsResponse;
 import com.getstream.sdk.chat.rest.response.GetDevicesResponse;
@@ -1167,6 +1169,70 @@ public class StreamChat implements WSResponseHandler {
             }
         });
     }
+
+//    public void flagMessage(String messageID) {
+//        return await this.post(this.baseURL + '/moderation/flag', {
+//                target_message_id: messageID,
+//		});
+//    }
+
+    public void flagUser(@NonNull String targetUserId,
+                         FlagUserCallback callback) {
+
+        Map<String, String> body = new HashMap<>();
+        body.put("target_user_id",targetUserId);
+
+        mService.flagUser(apiKey, user.getId(), connectionId, body).enqueue(new Callback<FlagUserResponse>() {
+            @Override
+            public void onResponse(Call<FlagUserResponse> call, Response<FlagUserResponse> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError(response.message(), response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FlagUserResponse> call, Throwable t) {
+                callback.onError(t.getLocalizedMessage(), -1);
+            }
+        });
+    }
+
+    public void unFlagUser(@NonNull String targetUserId,
+                         FlagUserCallback callback) {
+
+        Map<String, String> body = new HashMap<>();
+        body.put("target_user_id",targetUserId);
+
+        mService.unFlagUser(apiKey, user.getId(), connectionId, body).enqueue(new Callback<FlagUserResponse>() {
+            @Override
+            public void onResponse(Call<FlagUserResponse> call, Response<FlagUserResponse> response) {
+                if (response.isSuccessful()) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError(response.message(), response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FlagUserResponse> call, Throwable t) {
+                callback.onError(t.getLocalizedMessage(), -1);
+            }
+        });
+    }
+
+//    public void unflagMessage(String messageID) {
+//        return await this.post(this.baseURL + '/moderation/unflag', {
+//                target_message_id: messageID,
+//		});
+//    }
+//
+//    public void unflagUser(String userID) {
+//        return await this.post(this.baseURL + '/moderation/unflag', {
+//                target_user_id: userID,
+//		});
+//    }
 
     public void flagMessage() {
     }
