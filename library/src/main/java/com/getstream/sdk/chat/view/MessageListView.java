@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
@@ -91,7 +92,7 @@ public class MessageListView extends RecyclerView {
 
     private void init(Context context) {
         layoutManager = new LinearLayoutManager(context);
-        layoutManager.setStackFromEnd(true);
+//        setStackFromEnd(true);
 
         this.setLayoutManager(layoutManager);
         hasScrolledUp = false;
@@ -303,13 +304,35 @@ public class MessageListView extends RecyclerView {
                     }
                     viewModel.setMessageListScrollUp(currentLastVisible + 1 < lVPosition);
                     fVPosition = currentFirstVisible;
-                    lVPosition = currentLastVisible;
-                    viewModel.setThreadParentPosition(lVPosition);
+//                    lVPosition = currentLastVisible;
+                    MessageListView.this.postDelayed(() -> {
+                        lVPosition = layoutManager.findLastVisibleItemPosition();
+                        viewModel.setThreadParentPosition(lVPosition);
+                    }, 500);
                 }
             }
         });
+
+        this.addOnLayoutChangeListener((view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            Log.d(TAG, "bottom :" + bottom);
+            Log.d(TAG, "oldBottom :" + oldBottom);
+            Log.d(TAG, "lVPosition :" + lVPosition);
+            if (bottom < oldBottom) {
+                final int lastAdapterItem = adapter.getItemCount() - 1;
+                post(()-> {
+                    int recyclerViewPositionOffset = -1000000;
+                    View bottomView = layoutManager.findViewByPosition(lastAdapterItem);
+                    if (bottomView != null) {
+                        recyclerViewPositionOffset = 0 - bottomView.getHeight();
+                    }
+                    layoutManager.scrollToPositionWithOffset(lastAdapterItem, recyclerViewPositionOffset);
+                });
+            }
+
+        });
         super.setAdapter(adapter);
     }
+
 
     public void setViewModel(ChannelViewModel viewModel, LifecycleOwner lifecycleOwner) {
         this.viewModel = viewModel;
